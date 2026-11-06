@@ -272,3 +272,11 @@ export function formatShort(totalSeconds) {
   const s = Math.max(0, Math.floor(totalSeconds));
   return s < 60 ? `:${String(s).padStart(2, '0')}` : formatClock(s);
 }
+
+/**
+ * True when a countdown beep is due: the whole seconds left just changed
+ * to 3, 2 or 1. At most one beep per second.
+ */
+export function isCountdownSecond(prevSeconds, seconds) {
+  return seconds !== prevSeconds && seconds >= 1 && seconds <= 3;
+}

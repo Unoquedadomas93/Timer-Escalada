@@ -1,14 +1,14 @@
 // UI wiring. All timing decisions live in engine.js.
 import {
   PHASE, buildIntervalPhases, presetTotalSeconds, createTimer, createStopwatch,
-  formatTime, formatClock, formatShort, remainingCounts, lapState,
+  formatTime, formatClock, formatShort, remainingCounts, lapState, isCountdownSecond,
 } from './engine.js';
 import { loadStore, saveStore, newId, DEFAULT_SETTINGS } from './storage.js';
 import { defaultPresets, EMPTY_PRESET } from './presets.js';
 import { unlockAudio, resumeAudio, cue, speak } from './audio.js';
 import { detectLang, makeT, LANGS } from './i18n.js';
 
-const APP_VERSION = '0.3.0';
+const APP_VERSION = '0.3.1';
 const TICK_MS = 100;
 const MAX_DURATION = 5999; // 99:59
 
@@ -203,7 +203,7 @@ function makeIntervalScreen(root, cfg) {
         cue(s.phase.name, store.settings);
         flash();
         if (store.settings.voice) speak(isLastRound(s) ? `${label(s.phase)}. ${t('lastRound')}` : label(s.phase), lang);
-      } else if (s.secondsRemaining !== run.lastSec && s.secondsRemaining >= 1 && s.secondsRemaining <= 3 && s.phase.seconds > 3) {
+      } else if (isCountdownSecond(run.lastSec, s.secondsRemaining)) {
         cue('tick', store.settings);
       }
     }
@@ -293,14 +293,16 @@ function makeLapScreen(root, cfg) {
         cue(s.phase === 'prepare' ? 'prepare' : 'work', store.settings);
         flash();
         if (store.settings.voice) speak(t(`phase_${s.phase}`), lang);
-      } else if (s.phase === 'prepare' && s.secondsRemaining !== last.sec && s.secondsRemaining <= 3) {
+      } else if (s.phase === 'prepare' && isCountdownSecond(last.sec, s.secondsRemaining)) {
         cue('tick', store.settings);
       } else if (s.phase === 'lap' && s.lapsDone > last.laps) {
         cue('work', store.settings);
         flash();
         if (store.settings.voice) speak(t('lapN', { n: s.lapsDone + 1 }), lang);
+      } else if (s.phase === 'lap' && isCountdownSecond(last.toNext, s.toNext)) {
+        cue('tick', store.settings);
       }
-      last = { phase: s.phase, sec: s.secondsRemaining, laps: s.lapsDone };
+      last = { phase: s.phase, sec: s.secondsRemaining, laps: s.lapsDone, toNext: s.toNext };
     }
     if (visible) render(snap, s);
   }

@@ -78,14 +78,15 @@ function tone(freq, duration, delay = 0, volume = 0.6, type = 'sine') {
 // hearing-test beep. A sine wave at almost full scale, with 5 ms fades so it
 // starts and stops cleanly without clicks.
 const SIREN_SECONDS = 0.5;
+const TICK_SECONDS = 0.25; // countdown beeps in the last 3 s of a phase
 const SIREN_VOLUME = 0.98;
 const SIREN_HIGH = 1250; // Hz
 
-function siren() {
+function siren(seconds = SIREN_SECONDS) {
   if (!ctx) return;
   if (ctx.state !== 'running') ctx.resume().catch(() => {});
   const t0 = ctx.currentTime + 0.005;
-  const t1 = t0 + SIREN_SECONDS;
+  const t1 = t0 + seconds;
   const gain = ctx.createGain();
   gain.gain.setValueAtTime(0, t0);
   gain.gain.linearRampToValueAtTime(SIREN_VOLUME, t0 + 0.005);
@@ -114,7 +115,8 @@ const VIBRATIONS = {
  * @param {{sound:boolean, vibrate:boolean}} settings
  */
 export function cue(kind, settings) {
-  if (settings.sound) siren(); // same sound for every cue
+  // Same tone for every cue; the 3-2-1 countdown beeps are shorter.
+  if (settings.sound) siren(kind === 'tick' ? TICK_SECONDS : SIREN_SECONDS);
   if (settings.vibrate && navigator.vibrate) {
     try { navigator.vibrate(VIBRATIONS[kind] || 60); } catch { /* unsupported */ }
   }
