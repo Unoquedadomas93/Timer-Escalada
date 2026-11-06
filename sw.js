@@ -1,6 +1,6 @@
 // Offline cache for the app shell. Bump CACHE_VERSION whenever any cached
 // file changes so clients pick up the new version.
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE = `timer-escalada-${CACHE_VERSION}`;
 const ASSETS = [
   './',
@@ -20,7 +20,7 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS.map((u) => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (event) => {

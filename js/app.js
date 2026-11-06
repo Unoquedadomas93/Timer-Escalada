@@ -5,10 +5,10 @@ import {
 } from './engine.js';
 import { loadStore, saveStore, newId } from './storage.js';
 import { defaultPresets, EMPTY_PRESET } from './presets.js';
-import { unlockAudio, cue, speak } from './audio.js';
+import { unlockAudio, resumeAudio, cue, speak } from './audio.js';
 import { detectLang, makeT } from './i18n.js';
 
-const APP_VERSION = '0.1.0';
+const APP_VERSION = '0.1.1';
 const TICK_MS = 100;
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -334,6 +334,11 @@ function bindSettings() {
       if (key === 'sound' && e.target.checked) { unlockAudio(); cue('tick', { sound: true, vibrate: false }); }
     });
   }
+  $('#btn-test-sound').addEventListener('click', () => {
+    unlockAudio();
+    cue('work', { sound: true, vibrate: store.settings.vibrate });
+    setTimeout(() => cue('rest', { sound: true, vibrate: false }), 700);
+  });
 }
 
 /* ---------- screen wake lock ---------- */
@@ -588,7 +593,9 @@ function bindRunControls() {
 }
 
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState !== 'visible' || !active) return;
+  if (document.visibilityState !== 'visible') return;
+  resumeAudio();
+  if (!active) return;
   const running = active.kind === 'interval'
     ? active.timer.snapshot().status === 'running'
     : active.sw.snapshot().status === 'running';
@@ -636,6 +643,10 @@ function bindHome() {
 function registerServiceWorker() {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
   const firstInstall = !navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (firstInstall) return;
+    if (!active) location.reload();
+  });
   navigator.serviceWorker.register('sw.js').then((reg) => {
     const w = reg.installing;
     if (!w || !firstInstall) return;
@@ -644,6 +655,8 @@ function registerServiceWorker() {
     });
   }).catch(() => {});
 }
+
+document.addEventListener('pointerdown', unlockAudio, { passive: true });
 
 buildEditorFields();
 bindHome();

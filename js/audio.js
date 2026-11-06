@@ -2,23 +2,65 @@
 // No audio files: keeps the download tiny and works offline.
 
 let ctx = null;
+let mediaEl = null;
 
-/** Must be called from a user gesture (iOS/Safari unlock). */
+// A tiny silent WAV built in code (no file to download or cache).
+function silentWavUrl() {
+  const rate = 8000;
+  const samples = rate / 10; // 0.1 s
+  const buf = new ArrayBuffer(44 + samples);
+  const v = new DataView(buf);
+  const str = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  str(0, 'RIFF'); v.setUint32(4, 36 + samples, true); str(8, 'WAVE');
+  str(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true);
+  str(36, 'data'); v.setUint32(40, samples, true);
+  for (let i = 0; i < samples; i++) v.setUint8(44 + i, 128); // 8-bit silence
+  let bin = '';
+  new Uint8Array(buf).forEach((b) => { bin += String.fromCharCode(b); });
+  return `data:audio/wav;base64,${btoa(bin)}`;
+}
+
+/**
+ * Must be called from a user gesture (tap). On iOS this:
+ *  - asks for the "playback" audio session so tones play even with the
+ *    ring/silent switch on silent (Safari 17+),
+ *  - plays a silent media clip, which does the same on older iOS,
+ *  - creates/resumes the Web Audio context.
+ */
 export function unlockAudio() {
+  try {
+    if (navigator.audioSession) navigator.audioSession.type = 'playback';
+  } catch { /* unsupported */ }
+  try {
+    if (!mediaEl) {
+      mediaEl = new Audio(silentWavUrl());
+      mediaEl.setAttribute('playsinline', '');
+      mediaEl.preload = 'auto';
+    }
+    const p = mediaEl.play();
+    if (p && p.catch) p.catch(() => {});
+  } catch { /* optional */ }
   try {
     const AC = globalThis.AudioContext || globalThis.webkitAudioContext;
     if (!AC) return;
     if (!ctx) ctx = new AC();
-    if (ctx.state === 'suspended') ctx.resume();
-    // A silent blip fully unlocks playback on iOS.
-    tone(1, 0.01, 0, 0.0001);
+    if (ctx.state !== 'running') ctx.resume().catch(() => {});
+    // A silent blip fully unlocks Web Audio on iOS.
+    tone(440, 0.02, 0, 0.0001);
   } catch {
     /* audio is optional */
   }
 }
 
-function tone(freq, duration, delay = 0, volume = 0.35, type = 'sine') {
+/** Try to wake the context after the page was backgrounded or the screen locked. */
+export function resumeAudio() {
+  if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {});
+}
+
+function tone(freq, duration, delay = 0, volume = 0.6, type = 'sine') {
   if (!ctx) return;
+  if (ctx.state !== 'running') ctx.resume().catch(() => {});
   const t0 = ctx.currentTime + delay;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -34,11 +76,11 @@ function tone(freq, duration, delay = 0, volume = 0.35, type = 'sine') {
 
 const SOUNDS = {
   tick: () => tone(880, 0.12),
-  work: () => { tone(1320, 0.35, 0, 0.45, 'square'); },
+  work: () => { tone(1320, 0.4, 0, 0.5, 'square'); },
   rest: () => { tone(660, 0.25); tone(520, 0.35, 0.22); },
   prepare: () => tone(740, 0.2),
   cooldown: () => { tone(520, 0.3); tone(440, 0.4, 0.25); },
-  finish: () => { tone(784, 0.18); tone(988, 0.18, 0.18); tone(1319, 0.5, 0.36, 0.45); },
+  finish: () => { tone(784, 0.18); tone(988, 0.18, 0.18); tone(1319, 0.5, 0.36, 0.6); },
 };
 
 const VIBRATIONS = {
