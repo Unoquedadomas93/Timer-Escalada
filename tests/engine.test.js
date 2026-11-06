@@ -248,3 +248,24 @@ test('formatShort', async () => {
   assert.equal(formatShort(180), '03:00');
   assert.equal(formatShort(3725), '1:02:05');
 });
+
+test('countdown beeps: once per second at 3, 2, 1', async () => {
+  const { isCountdownSecond } = await import('../js/engine.js');
+  const c = clock();
+  const timer = createTimer({ phases: [{ name: 'work', seconds: 5 }, { name: 'rest', seconds: 2 }], now: c.now });
+  timer.start();
+  const beeps = [];
+  let prev = null;
+  let prevIdx = -1;
+  for (let ms = 0; ms < 7000; ms += 100) {
+    const s = timer.snapshot();
+    // A phase change plays the long beep instead, so it is not a countdown beep.
+    if (s.phaseIndex === prevIdx && isCountdownSecond(prev, s.secondsRemaining)) beeps.push(`${s.phase.name}:${s.secondsRemaining}`);
+    prev = s.secondsRemaining;
+    prevIdx = s.phaseIndex;
+    c.advance(0.1);
+  }
+  assert.deepEqual(beeps, ['work:3', 'work:2', 'work:1', 'rest:1']);
+  assert.equal(isCountdownSecond(3, 3), false);
+  assert.equal(isCountdownSecond(4, 0), false);
+});
