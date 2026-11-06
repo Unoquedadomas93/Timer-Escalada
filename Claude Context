@@ -102,7 +102,7 @@ Lessons from its reviews (1-star reviews complaining about paywalls):
 - [ ] After one successful load, the app opens and runs with the network disabled.
 - [ ] Lighthouse mobile: Performance ≥ 90, Accessibility ≥ 90, PWA installable.
 - [ ] No console errors on Chrome, Safari iOS and Android Chrome.
-- [ ] Interval engine unit tests pass for: normal sequence, pause/resume, skip, reset, zero-second rest, and end of workout.
+- [x] Interval engine unit tests pass for: normal sequence, pause/resume, skip, reset, zero-second rest, and end of workout.
 
 ## 6. Working rules for the agent
 
@@ -132,3 +132,23 @@ Lessons from its reviews (1-star reviews complaining about paywalls):
 - **Tabata**: 20 s work / 10 s rest, 8 rounds, popularised as high-intensity interval training.
 - **Cooldown**: optional final phase after the workout ends.
 - **Phase cue**: sound, vibration or visual flash signalling a change.
+
+## 9. MVP build: defaults chosen (owner to confirm)
+
+The first build (v0.1.0) used these defaults for the [TO CONFIRM] items. Each one is easy to change.
+
+| Question | Default used |
+|---|---|
+| Audience | General interval/HIIT timer, with climbing presets (hangboard repeaters 7/3, bouldering 4×4) next to Tabata and EMOM |
+| UI language | Spanish + English, detected from the browser, switchable in Settings; Spanish is the fallback |
+| Paid option | None. The app is 100% free, with no payment or review prompts |
+| Pages folder | `main` branch, `/ (root)`; `.nojekyll` added |
+| Stack | Vanilla HTML/CSS/ES modules, no build step, zero runtime dependencies (`package.json` only holds the `npm test` / `npm start` scripts) |
+| Sounds | Generated Web Audio tones, no audio files; optional voice through `speechSynthesis` |
+| PWA | Installable: manifest plus 192/512 PNG icons and a maskable icon |
+| Branding | Placeholder orange/climbing icon in `assets/icons/icon.svg`; colours are CSS variables in `css/styles.css` |
+
+Behaviour notes:
+- The rest after the final round is dropped. Tabata therefore runs 3:50 of intervals plus the 10 s get-ready.
+- Skipping to the end still logs the workout in history with its planned duration.
+- The stopwatch logs to history when it is reset or closed after at least 5 s.
