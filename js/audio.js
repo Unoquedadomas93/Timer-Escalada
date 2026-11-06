@@ -79,7 +79,7 @@ function tone(freq, duration, delay = 0, volume = 0.6, type = 'sine') {
 // starts and stops cleanly without clicks.
 const SIREN_SECONDS = 0.5;
 const SIREN_VOLUME = 0.98;
-const SIREN_HIGH = 2000; // Hz
+const SIREN_HIGH = 1250; // Hz
 
 function siren() {
   if (!ctx) return;
