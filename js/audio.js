@@ -74,53 +74,30 @@ function tone(freq, duration, delay = 0, volume = 0.6, type = 'sine') {
   osc.stop(t0 + duration + 0.02);
 }
 
-// The app's single sound: a loud, half-second klaxon "whoop" in the style of
-// an emergency / nuclear-plant alarm. Two buzzy sawtooth waves (plus a square
-// an octave below for body) rise from SIREN_LOW to SIREN_HIGH, then go
-// through a compressor so they play as loud as possible without distorting.
+// The app's single sound: one loud, steady, high-pitched pure tone, like a
+// hearing-test beep. A sine wave at almost full scale, with 5 ms fades so it
+// starts and stops cleanly without clicks.
 const SIREN_SECONDS = 0.5;
-const SIREN_RISE_SECONDS = 0.42;
-const SIREN_LOW = 500;
-const SIREN_HIGH = 1100;
+const SIREN_VOLUME = 0.98;
+const SIREN_HIGH = 2000; // Hz
 
 function siren() {
   if (!ctx) return;
   if (ctx.state !== 'running') ctx.resume().catch(() => {});
   const t0 = ctx.currentTime + 0.005;
   const t1 = t0 + SIREN_SECONDS;
-
-  const comp = ctx.createDynamicsCompressor();
-  comp.threshold.value = -12;
-  comp.knee.value = 0;
-  comp.ratio.value = 12;
-  comp.attack.value = 0.002;
-  comp.release.value = 0.05;
-
   const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0.0001, t0);
-  gain.gain.exponentialRampToValueAtTime(1, t0 + 0.006);
-  gain.gain.setValueAtTime(1, t1 - 0.025);
-  gain.gain.exponentialRampToValueAtTime(0.0001, t1);
-  gain.connect(comp).connect(ctx.destination);
-
-  const voices = [
-    { type: 'sawtooth', detune: 0, level: 0.6 },
-    { type: 'sawtooth', detune: 18, level: 0.6 },
-    { type: 'square', detune: -1200, level: 0.35 },
-  ];
-  for (const v of voices) {
-    const osc = ctx.createOscillator();
-    osc.type = v.type;
-    osc.detune.value = v.detune;
-    osc.frequency.setValueAtTime(SIREN_LOW, t0);
-    osc.frequency.exponentialRampToValueAtTime(SIREN_HIGH, t0 + SIREN_RISE_SECONDS);
-    osc.frequency.setValueAtTime(SIREN_HIGH, t1);
-    const level = ctx.createGain();
-    level.gain.value = v.level;
-    osc.connect(level).connect(gain);
-    osc.start(t0);
-    osc.stop(t1 + 0.02);
-  }
+  gain.gain.setValueAtTime(0, t0);
+  gain.gain.linearRampToValueAtTime(SIREN_VOLUME, t0 + 0.005);
+  gain.gain.setValueAtTime(SIREN_VOLUME, t1 - 0.005);
+  gain.gain.linearRampToValueAtTime(0, t1);
+  gain.connect(ctx.destination);
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.value = SIREN_HIGH;
+  osc.connect(gain);
+  osc.start(t0);
+  osc.stop(t1 + 0.02);
 }
 
 const VIBRATIONS = {
