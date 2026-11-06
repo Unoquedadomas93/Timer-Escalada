@@ -1,6 +1,6 @@
 {
   "name": "timer-escalada",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "Light, offline-ready interval and Tabata timer for mobile browsers.",
   "type": "module",

@@ -74,12 +74,15 @@ function tone(freq, duration, delay = 0, volume = 0.6, type = 'sine') {
   osc.stop(t0 + duration + 0.02);
 }
 
-// The app's single sound: a loud, half-second siren beep.
-// Two slightly detuned square waves sweep up and back down, then go through
-// a compressor so they play as loud as possible without distorting.
+// The app's single sound: a loud, high-pitched, half-second alarm.
+// The pitch flips rapidly between two high notes (a fast warble, like an
+// old-school phone alarm or a smoke detector). Two slightly detuned square
+// waves go through a compressor so they play as loud as possible without
+// distorting. 2.5-3.5 kHz is where phone speakers are loudest.
 const SIREN_SECONDS = 0.5;
-const SIREN_LOW = 950;
-const SIREN_HIGH = 1650;
+const SIREN_TRILL_HZ = 16; // low/high cycles per second
+const SIREN_LOW = 2600;
+const SIREN_HIGH = 3300;
 
 function siren() {
   if (!ctx) return;
@@ -96,18 +99,21 @@ function siren() {
 
   const gain = ctx.createGain();
   gain.gain.setValueAtTime(0.0001, t0);
-  gain.gain.exponentialRampToValueAtTime(1, t0 + 0.008);
-  gain.gain.setValueAtTime(1, t1 - 0.03);
+  gain.gain.exponentialRampToValueAtTime(1, t0 + 0.006);
+  gain.gain.setValueAtTime(1, t1 - 0.02);
   gain.gain.exponentialRampToValueAtTime(0.0001, t1);
 
   gain.connect(comp).connect(ctx.destination);
-  for (const detune of [0, 12]) {
+  const half = 1 / (SIREN_TRILL_HZ * 2);
+  for (const detune of [0, 15]) {
     const osc = ctx.createOscillator();
     osc.type = 'square';
     osc.detune.value = detune;
-    osc.frequency.setValueAtTime(SIREN_LOW, t0);
-    osc.frequency.linearRampToValueAtTime(SIREN_HIGH, t0 + SIREN_SECONDS / 2);
-    osc.frequency.linearRampToValueAtTime(SIREN_LOW, t1);
+    let high = true;
+    for (let t = t0; t < t1; t += half) {
+      osc.frequency.setValueAtTime(high ? SIREN_HIGH : SIREN_LOW, t);
+      high = !high;
+    }
     osc.connect(gain);
     osc.start(t0);
     osc.stop(t1 + 0.02);
