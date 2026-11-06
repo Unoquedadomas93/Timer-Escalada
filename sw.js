@@ -1,6 +1,6 @@
 // Offline cache for the app shell. Bump CACHE_VERSION whenever any cached
 // file changes so clients pick up the new version.
-const CACHE_VERSION = 'v7';
+const CACHE_VERSION = 'v8';
 const CACHE = `timer-escalada-${CACHE_VERSION}`;
 const ASSETS = [
   './',
@@ -13,6 +13,7 @@ const ASSETS = [
   './js/presets.js',
   './js/audio.js',
   './js/i18n.js',
+  './assets/fonts/bebas-neue.woff2',
   './assets/icons/icon.svg',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',

@@ -223,3 +223,28 @@ export function formatStopwatch(ms) {
   const mmss = `${String(m).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}.${d}`;
   return h > 0 ? `${h}:${mmss}` : mmss;
 }
+
+/** Clock style with padded minutes: 5 -> "00:05", 935 -> "15:35", 3725 -> "1:02:05". */
+export function formatClock(totalSeconds) {
+  const s = Math.max(0, Math.floor(totalSeconds));
+  const h = Math.floor(s / 3600);
+  const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+  const sec = String(s % 60).padStart(2, '0');
+  return h > 0 ? `${h}:${m}:${sec}` : `${m}:${sec}`;
+}
+
+/**
+ * Rounds left in the current cycle and cycles left, counting the one in
+ * progress. A round counts as finished once its work phase is over.
+ */
+export function remainingCounts(s) {
+  if (!s || s.status === 'done' || !s.phase) return { rounds: 0, cycles: 0 };
+  const { phase, rounds, cycles } = s;
+  if (phase.name === PHASE.PREPARE) return { rounds, cycles };
+  if (phase.name === PHASE.COOLDOWN) return { rounds: 0, cycles: 0 };
+  const workDone = phase.name !== PHASE.WORK;
+  const roundsLeft = rounds - phase.round + (workDone ? 0 : 1);
+  const cycleDone = workDone && phase.round === rounds;
+  const cyclesLeft = cycles - phase.cycle + (cycleDone ? 0 : 1);
+  return { rounds: cycleDone ? rounds : roundsLeft, cycles: cyclesLeft };
+}

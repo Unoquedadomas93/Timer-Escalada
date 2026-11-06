@@ -5,6 +5,8 @@ Free, no accounts, no ads, no tracking, and it works offline after the first vis
 
 ## Features
 
+- **Layout**: four tabs (Timer, Workouts, Stopwatch, More). The timer screen shows the current phase in a large coloured panel, the next phase below it (tap it to skip), and rounds and cycles left around a big play button. Colours: yellow = get ready, green = work, red = rest, blue = long rest, purple = cooldown.
+
 - **Interval workouts**: work, rest, rounds, cycles, rest between cycles, get-ready and cooldown phases.
 - **Built-in presets**: Tabata (20 s / 10 s × 8), hangboard repeaters 7/3, bouldering 4×4, EMOM 10 min. All of them can be edited.
 - **Custom workouts**: create, edit and delete them. They are saved in `localStorage`.
@@ -55,6 +57,7 @@ js/storage.js           localStorage with schema version
 js/audio.js             tones, vibration, voice
 js/presets.js           default presets
 js/i18n.js              Spanish / English strings
+assets/fonts/           Bebas Neue (SIL Open Font License), self-hosted
 assets/icons/           app icons
 tests/engine.test.js
 ```

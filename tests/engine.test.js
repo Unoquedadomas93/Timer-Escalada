@@ -201,3 +201,25 @@ test('formatting', () => {
   assert.equal(formatStopwatch(83456), '01:23.4');
   assert.equal(formatStopwatch(3723000), '1:02:03.0');
 });
+
+test('formatClock pads minutes', async () => {
+  const { formatClock } = await import('../js/engine.js');
+  assert.equal(formatClock(5), '00:05');
+  assert.equal(formatClock(935), '15:35');
+  assert.equal(formatClock(3725), '1:02:05');
+});
+
+test('remaining rounds and cycles', async () => {
+  const { remainingCounts } = await import('../js/engine.js');
+  const p = { prepare: 10, work: 20, rest: 10, rounds: 3, cycles: 2, cycleRest: 60, cooldown: 30 };
+  const c = clock();
+  const timer = createTimer({ phases: buildIntervalPhases(p), now: c.now });
+  const at = (sec) => { c.advance(sec); return remainingCounts(timer.snapshot()); };
+  assert.deepEqual(remainingCounts(timer.start()), { rounds: 3, cycles: 2 }); // prepare
+  assert.deepEqual(at(10), { rounds: 3, cycles: 2 }); // work r1 c1
+  assert.deepEqual(at(20), { rounds: 2, cycles: 2 }); // rest after r1
+  assert.deepEqual(at(10 + 20 + 10 + 20), { rounds: 3, cycles: 1 }); // cycle rest after c1: next cycle full
+  assert.deepEqual(at(60), { rounds: 3, cycles: 1 }); // work r1 c2
+  assert.deepEqual(at(20 + 10 + 20 + 10 + 20), { rounds: 0, cycles: 0 }); // cooldown
+  assert.deepEqual(at(30), { rounds: 0, cycles: 0 }); // done
+});
