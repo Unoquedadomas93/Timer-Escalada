@@ -223,3 +223,28 @@ test('remaining rounds and cycles', async () => {
   assert.deepEqual(at(20 + 10 + 20 + 10 + 20), { rounds: 0, cycles: 0 }); // cooldown
   assert.deepEqual(at(30), { rounds: 0, cycles: 0 }); // done
 });
+
+test('lap timer: prepare, count up, laps', async () => {
+  const { lapState } = await import('../js/engine.js');
+  assert.deepEqual(lapState(0, 5, 60), { phase: 'prepare', secondsRemaining: 5, elapsed: 0, lapsDone: 0, toNext: null });
+  assert.equal(lapState(4500, 5, 60).secondsRemaining, 1);
+  let s = lapState(5000, 5, 60);
+  assert.equal(s.phase, 'lap');
+  assert.equal(s.lapsDone, 0);
+  assert.equal(s.toNext, 60);
+  s = lapState(5000 + 61000, 5, 60);
+  assert.equal(s.lapsDone, 1);
+  assert.equal(s.toNext, 59);
+  assert.equal(s.elapsed, 61000);
+  s = lapState(10000, 0, 0); // no lap interval: plain stopwatch
+  assert.equal(s.lapsDone, 0);
+  assert.equal(s.toNext, null);
+});
+
+test('formatShort', async () => {
+  const { formatShort } = await import('../js/engine.js');
+  assert.equal(formatShort(5), ':05');
+  assert.equal(formatShort(0), ':00');
+  assert.equal(formatShort(180), '03:00');
+  assert.equal(formatShort(3725), '1:02:05');
+});

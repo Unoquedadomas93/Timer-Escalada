@@ -150,6 +150,8 @@ The first build (v0.1.0) used these defaults for the [TO CONFIRM] items. Each on
 
 Design (v0.2.0): the owner asked for the reference app's look. The app has a dark charcoal background, neon yellow and lime panels, a blue rounds counter and condensed all-caps type (Bebas Neue, self-hosted). Its four tabs are Timer / Workouts / Stopwatch / More, and the timer is a vertical stack: header, current phase, next phase, then rounds left / play / cycles left.
 
+Menus (v0.3.0): the tab names match the reference (TABATA, RONDAS, CRONÓMETRO, MÁS), and so does the setup layout (CANCELAR / title / GUARDAR, a grey INTERVALOS bar, then rows with a coloured dot, title, subtitle, large value and chevron). The owner has not shown the reference RONDAS screen, so it is a guess: a simple rounds timer. [TO CONFIRM]
+
 Behaviour notes:
 - The rest after the final round is dropped. Tabata therefore runs 3:50 of intervals plus the 10 s get-ready.
 - Skipping to the end still logs the workout in history with its planned duration.

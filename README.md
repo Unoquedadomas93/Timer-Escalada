@@ -5,7 +5,9 @@ Free, no accounts, no ads, no tracking, and it works offline after the first vis
 
 ## Features
 
-- **Layout**: four tabs (Timer, Workouts, Stopwatch, More). The timer screen shows the current phase in a large coloured panel, the next phase below it (tap it to skip), and rounds and cycles left around a big play button. Colours: yellow = get ready, green = work, red = rest, blue = long rest, purple = cooldown.
+- **Tabs**: TABATA (saved interval workouts), RONDAS (simple rounds timer), CRONÓMETRO (count-up clock that beeps every lap) and MÁS (sound, language, history).
+- **Timer screen**: the current phase in a large coloured panel, the next phase below it (tap it to skip), and counters around a big play button. ⚙︎ opens the setup menu (CANCELAR · name · GUARDAR, one row per setting); the clock icon opens the saved workouts.
+- **Colours**: yellow = get ready / rest between cycles, green = work, red = rest, blue = rounds / cooldown.
 
 - **Interval workouts**: work, rest, rounds, cycles, rest between cycles, get-ready and cooldown phases.
 - **Built-in presets**: Tabata (20 s / 10 s × 8), hangboard repeaters 7/3, bouldering 4×4, EMOM 10 min. All of them can be edited.

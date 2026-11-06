@@ -11,6 +11,11 @@ export const DEFAULT_SETTINGS = Object.freeze({
   vibrate: true,
   flash: true, // false = reduced flashing
   voice: false,
+  selectedId: null,
+  // RONDAS tab: a simple rounds timer
+  roundsTimer: { prepare: 10, work: 180, rest: 60, rounds: 5 },
+  // CRONÓMETRO tab: count-up clock that beeps every lap
+  lapTimer: { prepare: 0, lap: 420 },
 });
 
 export function newId() {
