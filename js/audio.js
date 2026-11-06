@@ -77,10 +77,10 @@ function tone(freq, duration, delay = 0, volume = 0.6, type = 'sine') {
 // The app's single sound: one loud, steady, high-pitched pure tone, like a
 // hearing-test beep. A sine wave at almost full scale, with 5 ms fades so it
 // starts and stops cleanly without clicks.
-const SIREN_SECONDS = 0.5;
-const TICK_SECONDS = 0.25; // countdown beeps in the last 3 s of a phase
+const SIREN_SECONDS = 0.6;
+const TICK_SECONDS = 0.2; // countdown beeps in the last 3 s of a phase
 const SIREN_VOLUME = 0.98;
-const SIREN_HIGH = 1250; // Hz
+const SIREN_HIGH = 1050; // Hz
 
 function siren(seconds = SIREN_SECONDS) {
   if (!ctx) return;
