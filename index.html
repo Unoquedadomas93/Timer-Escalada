@@ -22,15 +22,13 @@
   <template id="tpl-timer">
     <header class="head">
       <button class="hbtn js-setup" data-i18n-label="settings">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.9a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 12 8.5 8.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
       </button>
       <div class="head-title">
         <div class="head-name js-name"></div>
         <div class="head-sub js-total"></div>
       </div>
-      <button class="hbtn js-list" data-i18n-label="myWorkouts">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 12 8.5 8.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      </button>
+      <span class="hbtn is-off" aria-hidden="true"></span>
     </header>
     <div class="panel panel-current js-current">
       <button class="reset-btn js-reset" data-i18n-label="reset">
@@ -87,23 +85,6 @@
       <button class="add-btn danger js-delete" hidden>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"/></svg>
         <span data-i18n="deleteWorkout"></span>
-      </button>
-    </div>
-  </section>
-
-  <!-- Saved workouts (opened from the TABATA timer icon) -->
-  <section id="workouts" class="screen list-screen sheet" hidden>
-    <header class="sheet-head">
-      <button class="sheet-link grey js-close" data-i18n="close"></button>
-      <div class="sheet-title static" data-i18n="myWorkouts"></div>
-      <span class="sheet-link"></span>
-    </header>
-    <div class="list-body">
-      <div class="section-bar" data-i18n="tabTabata"></div>
-      <ul class="rows js-rows"></ul>
-      <button class="add-btn js-add">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13.5" r="8" fill="currentColor"/><path d="M10 3h4M12 3v2.5M18.5 6l1.3-1.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12 13.5V9.5" stroke="#4a4a4a" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <span data-i18n="addWorkout"></span>
       </button>
     </div>
   </section>

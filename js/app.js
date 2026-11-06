@@ -1,14 +1,14 @@
 // UI wiring. All timing decisions live in engine.js.
 import {
-  PHASE, buildIntervalPhases, presetTotalSeconds, createTimer, createStopwatch,
-  formatTime, formatClock, formatShort, remainingCounts, lapState, isCountdownSecond,
+  PHASE, buildIntervalPhases, createTimer, createStopwatch,
+  formatClock, formatShort, remainingCounts, lapState, isCountdownSecond,
 } from './engine.js';
 import { loadStore, saveStore, newId, DEFAULT_SETTINGS } from './storage.js';
 import { defaultPresets, EMPTY_PRESET } from './presets.js';
 import { unlockAudio, resumeAudio, cue, speak } from './audio.js';
 import { detectLang, makeT, LANGS } from './i18n.js';
 
-const APP_VERSION = '0.3.1';
+const APP_VERSION = '0.3.2';
 const TICK_MS = 100;
 const MAX_DURATION = 5999; // 99:59
 
@@ -114,7 +114,7 @@ function mountTimer(root) {
   root.append($('#tpl-timer').content.cloneNode(true));
   const q = (c) => root.querySelector(c);
   return {
-    setup: q('.js-setup'), list: q('.js-list'), name: q('.js-name'), total: q('.js-total'),
+    setup: q('.js-setup'), name: q('.js-name'), total: q('.js-total'),
     current: q('.js-current'), reset: q('.js-reset'), phase: q('.js-phase'), time: q('.js-time'),
     msg: q('.js-msg'), progress: q('.js-progress'), next: q('.js-next'), nextPhase: q('.js-next-phase'),
     nextTime: q('.js-next-time'), statL: q('.js-stat-left'), left: q('.js-left'), leftLabel: q('.js-left-label'),
@@ -137,7 +137,7 @@ function setPhase(e, phase) {
 /**
  * @param {HTMLElement} root
  * @param {{ mode: 'tabata'|'rounds', getPreset: () => object, title: () => string,
- *           labelFor: (phase) => string, stats: (s) => object, onSetup: () => void, onList?: () => void }} cfg
+ *           labelFor: (phase) => string, stats: (s) => object, onSetup: () => void }} cfg
  */
 function makeIntervalScreen(root, cfg) {
   const ui = mountTimer(root);
@@ -240,8 +240,6 @@ function makeIntervalScreen(root, cfg) {
   ui.reset.addEventListener('click', reset);
   ui.next.addEventListener('click', skip);
   ui.setup.addEventListener('click', cfg.onSetup);
-  if (cfg.onList) ui.list.addEventListener('click', cfg.onList);
-  else ui.list.classList.add('is-off');
 
   return {
     load, tick, status, busy, toggle, reset, skip,
@@ -256,7 +254,6 @@ function makeLapScreen(root, cfg) {
   const ui = mountTimer(root);
   const sw = createStopwatch();
   let last = { phase: null, sec: null, laps: 0 };
-  ui.list.classList.add('is-off');
   ui.statL.classList.add('is-off');
   ui.statR.classList.add('is-off');
   ui.next.disabled = true;
@@ -511,12 +508,11 @@ function rowItem({ dot, title, sub, value, onClick, selected, valueClass }) {
 function closeSheetViews() {
   closePicker(false);
   $('#setup').hidden = true;
-  $('#workouts').hidden = true;
   setupState = null;
 }
 
 function leaveSheet() {
-  if (history.state && (history.state.view === 'setup' || history.state.view === 'workouts')) history.back();
+  if (history.state && history.state.view === 'setup') history.back();
   else closeSheetViews();
 }
 
@@ -574,48 +570,6 @@ function deletePreset(p) {
   const current = screens.tabata.preset();
   if (current && current.id === p.id) screens.tabata.load();
   leaveSheet();
-}
-
-const fmtSummary = (sec) => (sec < 60 ? `${sec}s` : formatTime(sec));
-function presetSummary(p) {
-  let s = p.rest > 0
-    ? t('summaryRounds', { work: fmtSummary(p.work), rest: fmtSummary(p.rest), rounds: p.rounds })
-    : `${fmtSummary(p.work)} × ${p.rounds}`;
-  if (p.cycles > 1) s += ` ${t('summaryCycles', { cycles: p.cycles })}`;
-  return s;
-}
-
-function openWorkouts() {
-  renderWorkouts();
-  $('#workouts').hidden = false;
-  $('#workouts .list-body').scrollTop = 0;
-  history.pushState({ view: 'workouts' }, '');
-}
-
-function renderWorkouts() {
-  const list = $('#workouts .js-rows');
-  list.replaceChildren();
-  const current = screens.tabata.preset();
-  for (const p of store.presets) {
-    const selected = current && current.id === p.id;
-    list.append(rowItem({
-      dot: selected ? 'green' : 'yellow',
-      title: p.name,
-      sub: presetSummary(p),
-      value: formatClock(presetTotalSeconds(p)),
-      valueClass: 'small',
-      selected,
-      onClick: () => {
-        if (!selected || screens.tabata.status() === 'done') {
-          if (!confirmAbandon(screens.tabata)) return;
-          store.settings.selectedId = p.id;
-          persist();
-          screens.tabata.load();
-        }
-        leaveSheet();
-      },
-    }));
-  }
 }
 
 /* ---------- MÁS ---------- */
@@ -715,7 +669,7 @@ function showTab(tab) {
     if (btn.dataset.tab === tab) btn.setAttribute('aria-current', 'page');
     else btn.removeAttribute('aria-current');
   }
-  if (!$('#setup').hidden || !$('#workouts').hidden) leaveSheet();
+  if (!$('#setup').hidden) leaveSheet();
   if (tab === 'more') renderMore();
   else screens[tab].render();
 }
@@ -741,7 +695,6 @@ screens.tabata = makeIntervalScreen($('#tab-tabata'), {
     return { left: left.rounds, leftLabel: t('roundsLeft'), right: left.cycles, rightLabel: t('cyclesLeft') };
   },
   onSetup: () => openTabataSetup((screens.tabata.preset() || {}).id),
-  onList: openWorkouts,
 });
 
 screens.rounds = makeIntervalScreen($('#tab-rounds'), {
@@ -793,14 +746,6 @@ function bind() {
   });
   $('.js-delete', setup).addEventListener('click', () => { if (setupState && setupState.onDelete) setupState.onDelete(); });
 
-  const wk = $('#workouts');
-  $('.js-close', wk).addEventListener('click', leaveSheet);
-  $('.js-add', wk).addEventListener('click', () => {
-    $('#workouts').hidden = true;
-    history.replaceState({ view: 'app' }, '');
-    openTabataSetup(null);
-  });
-
   const picker = $('#picker');
   $('.js-ok', picker).addEventListener('click', () => closePicker(true));
   picker.addEventListener('click', (e) => { if (e.target === picker) closePicker(true); });
@@ -811,7 +756,7 @@ function bind() {
       if (e.key === 'Enter') { e.preventDefault(); closePicker(true); }
       return;
     }
-    if (!$('#setup').hidden || !$('#workouts').hidden) {
+    if (!$('#setup').hidden) {
       if (e.key === 'Escape') leaveSheet();
       return;
     }
