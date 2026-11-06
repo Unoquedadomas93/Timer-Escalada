@@ -8,7 +8,7 @@ import { defaultPresets, EMPTY_PRESET } from './presets.js';
 import { unlockAudio, resumeAudio, cue, speak } from './audio.js';
 import { detectLang, makeT } from './i18n.js';
 
-const APP_VERSION = '0.1.1';
+const APP_VERSION = '0.1.2';
 const TICK_MS = 100;
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -337,7 +337,6 @@ function bindSettings() {
   $('#btn-test-sound').addEventListener('click', () => {
     unlockAudio();
     cue('work', { sound: true, vibrate: store.settings.vibrate });
-    setTimeout(() => cue('rest', { sound: true, vibrate: false }), 700);
   });
 }
 

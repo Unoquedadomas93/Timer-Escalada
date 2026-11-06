@@ -1,4 +1,4 @@
-// Generated tones (Web Audio), vibration and optional spoken cues.
+// One generated siren beep (Web Audio), vibration and optional spoken cues.
 // No audio files: keeps the download tiny and works offline.
 
 let ctx = null;
@@ -74,14 +74,45 @@ function tone(freq, duration, delay = 0, volume = 0.6, type = 'sine') {
   osc.stop(t0 + duration + 0.02);
 }
 
-const SOUNDS = {
-  tick: () => tone(880, 0.12),
-  work: () => { tone(1320, 0.4, 0, 0.5, 'square'); },
-  rest: () => { tone(660, 0.25); tone(520, 0.35, 0.22); },
-  prepare: () => tone(740, 0.2),
-  cooldown: () => { tone(520, 0.3); tone(440, 0.4, 0.25); },
-  finish: () => { tone(784, 0.18); tone(988, 0.18, 0.18); tone(1319, 0.5, 0.36, 0.6); },
-};
+// The app's single sound: a loud, half-second siren beep.
+// Two slightly detuned square waves sweep up and back down, then go through
+// a compressor so they play as loud as possible without distorting.
+const SIREN_SECONDS = 0.5;
+const SIREN_LOW = 950;
+const SIREN_HIGH = 1650;
+
+function siren() {
+  if (!ctx) return;
+  if (ctx.state !== 'running') ctx.resume().catch(() => {});
+  const t0 = ctx.currentTime + 0.005;
+  const t1 = t0 + SIREN_SECONDS;
+
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -12;
+  comp.knee.value = 0;
+  comp.ratio.value = 12;
+  comp.attack.value = 0.002;
+  comp.release.value = 0.05;
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.exponentialRampToValueAtTime(1, t0 + 0.008);
+  gain.gain.setValueAtTime(1, t1 - 0.03);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t1);
+
+  gain.connect(comp).connect(ctx.destination);
+  for (const detune of [0, 12]) {
+    const osc = ctx.createOscillator();
+    osc.type = 'square';
+    osc.detune.value = detune;
+    osc.frequency.setValueAtTime(SIREN_LOW, t0);
+    osc.frequency.linearRampToValueAtTime(SIREN_HIGH, t0 + SIREN_SECONDS / 2);
+    osc.frequency.linearRampToValueAtTime(SIREN_LOW, t1);
+    osc.connect(gain);
+    osc.start(t0);
+    osc.stop(t1 + 0.02);
+  }
+}
 
 const VIBRATIONS = {
   tick: [60],
@@ -97,7 +128,7 @@ const VIBRATIONS = {
  * @param {{sound:boolean, vibrate:boolean}} settings
  */
 export function cue(kind, settings) {
-  if (settings.sound) (SOUNDS[kind] || SOUNDS.tick)();
+  if (settings.sound) siren(); // same sound for every cue
   if (settings.vibrate && navigator.vibrate) {
     try { navigator.vibrate(VIBRATIONS[kind] || 60); } catch { /* unsupported */ }
   }
