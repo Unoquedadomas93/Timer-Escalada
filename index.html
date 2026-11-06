@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Timer Escalada</title>
+  <meta name="description" content="Temporizador de intervalos, Tabata y cronómetro. Gratis, sin anuncios y funciona sin conexión.">
+  <meta name="theme-color" content="#111418" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Timer Escalada">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <!-- Home -->
+  <main id="view-home" class="view">
+    <header class="topbar">
+      <div>
+        <h1 data-i18n="appName">Timer Escalada</h1>
+        <p class="muted" data-i18n="tagline"></p>
+      </div>
+      <nav class="topbar-actions">
+        <button class="icon-btn" data-go="history" data-i18n-label="history">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3a9 9 0 0 0-9 9H1l4 4 4-4H6a7 7 0 1 1 2.05 4.95l-1.42 1.42A9 9 0 1 0 13 3zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8z"/></svg>
+        </button>
+        <button class="icon-btn" data-go="settings" data-i18n-label="settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.9a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>
+        </button>
+      </nav>
+    </header>
+
+    <section class="quick">
+      <button id="btn-stopwatch" class="card quick-card">
+        <span class="quick-title" data-i18n="stopwatch"></span>
+        <span class="quick-sub">00:00.0</span>
+      </button>
+      <form id="form-countdown" class="card quick-card">
+        <span class="quick-title" data-i18n="countdown"></span>
+        <div class="duration-input">
+          <input id="cd-min" type="number" inputmode="numeric" min="0" max="599" value="5" data-i18n-label="minutes">
+          <span>:</span>
+          <input id="cd-sec" type="number" inputmode="numeric" min="0" max="59" value="0" data-i18n-label="seconds">
+        </div>
+        <button type="submit" class="btn btn-primary btn-small" data-i18n="start"></button>
+      </form>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2 data-i18n="workouts"></h2>
+        <button id="btn-new" class="btn btn-ghost">+ <span data-i18n="newWorkout"></span></button>
+      </div>
+      <ul id="preset-list" class="preset-list"></ul>
+    </section>
+
+    <p class="muted small privacy" data-i18n="privacy"></p>
+  </main>
+
+  <!-- Editor -->
+  <main id="view-editor" class="view" hidden>
+    <header class="topbar">
+      <button class="icon-btn" data-go="home" data-i18n-label="back">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4L10.8 12z"/></svg>
+      </button>
+      <h1 id="editor-title"></h1>
+      <span class="icon-btn-spacer"></span>
+    </header>
+    <form id="form-editor" class="editor" novalidate>
+      <label class="field">
+        <span data-i18n="name"></span>
+        <input id="ed-name" type="text" maxlength="60" autocomplete="off">
+      </label>
+      <div id="ed-fields" class="editor-grid"></div>
+      <p class="total-line"><span data-i18n="total"></span>: <strong id="ed-total">0:00</strong></p>
+      <p id="ed-error" class="error" role="alert" hidden></p>
+      <div class="editor-actions">
+        <button type="submit" class="btn btn-primary" data-i18n="save"></button>
+        <button type="button" id="ed-start" class="btn" data-i18n="start"></button>
+        <button type="button" id="ed-delete" class="btn btn-danger" data-i18n="delete"></button>
+      </div>
+    </form>
+  </main>
+
+  <!-- History -->
+  <main id="view-history" class="view" hidden>
+    <header class="topbar">
+      <button class="icon-btn" data-go="home" data-i18n-label="back">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4L10.8 12z"/></svg>
+      </button>
+      <h1 data-i18n="history"></h1>
+      <span class="icon-btn-spacer"></span>
+    </header>
+    <ul id="history-list" class="history-list"></ul>
+    <p id="history-empty" class="muted" data-i18n="noHistory" hidden></p>
+    <button id="btn-clear-history" class="btn btn-danger" data-i18n="clearHistory"></button>
+  </main>
+
+  <!-- Settings -->
+  <main id="view-settings" class="view" hidden>
+    <header class="topbar">
+      <button class="icon-btn" data-go="home" data-i18n-label="back">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4L10.8 12z"/></svg>
+      </button>
+      <h1 data-i18n="settings"></h1>
+      <span class="icon-btn-spacer"></span>
+    </header>
+    <div class="settings">
+      <label class="field">
+        <span data-i18n="language"></span>
+        <select id="set-lang">
+          <option value="es">Español</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+      <label class="switch"><input type="checkbox" id="set-sound"><span data-i18n="sound"></span></label>
+      <label class="switch"><input type="checkbox" id="set-vibrate"><span data-i18n="vibrate"></span></label>
+      <label class="switch"><input type="checkbox" id="set-voice"><span data-i18n="voice"></span></label>
+      <label class="switch">
+        <input type="checkbox" id="set-flash">
+        <span><span data-i18n="flash"></span><br><small class="muted" data-i18n="flashHint"></small></span>
+      </label>
+      <p class="muted small" data-i18n="privacy"></p>
+      <p class="muted small" id="app-version"></p>
+    </div>
+  </main>
+
+  <!-- Running interval timer -->
+  <section id="view-run" class="run" hidden aria-live="off">
+    <div class="run-top">
+      <button class="icon-btn" id="run-close" data-i18n-label="close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6z"/></svg>
+      </button>
+      <div class="run-name" id="run-name"></div>
+      <span class="icon-btn-spacer"></span>
+    </div>
+    <div class="run-main">
+      <div class="run-phase" id="run-phase" aria-live="polite"></div>
+      <div class="run-time" id="run-time" role="timer">0:00</div>
+      <div class="run-meta">
+        <span id="run-round"></span>
+        <span id="run-cycle"></span>
+      </div>
+      <div class="run-msg" id="run-msg" aria-live="assertive"></div>
+      <div class="progress" aria-hidden="true"><div class="progress-bar" id="run-progress"></div></div>
+      <div class="run-sub">
+        <span id="run-total"></span>
+        <span id="run-next"></span>
+      </div>
+    </div>
+    <div class="run-controls">
+      <button class="btn btn-round" id="run-reset" data-i18n-label="reset">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5V1L7 6l5 5V7a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/></svg>
+      </button>
+      <button class="btn btn-round btn-main" id="run-toggle" data-i18n-label="start">
+        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>
+      </button>
+      <button class="btn btn-round" id="run-skip" data-i18n-label="skip">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 18 8.5-6L6 6zm9-12v12h2V6z"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- Stopwatch -->
+  <section id="view-stopwatch" class="run phase-stopwatch" hidden>
+    <div class="run-top">
+      <button class="icon-btn" id="sw-close" data-i18n-label="close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6z"/></svg>
+      </button>
+      <div class="run-name" data-i18n="stopwatch"></div>
+      <span class="icon-btn-spacer"></span>
+    </div>
+    <div class="run-main">
+      <div class="run-time run-time-sw" id="sw-time" role="timer">00:00.0</div>
+      <ol id="sw-laps" class="laps" reversed></ol>
+    </div>
+    <div class="run-controls">
+      <button class="btn btn-round" id="sw-reset" data-i18n-label="reset">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5V1L7 6l5 5V7a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/></svg>
+      </button>
+      <button class="btn btn-round btn-main" id="sw-toggle" data-i18n-label="start">
+        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>
+      </button>
+      <button class="btn btn-round" id="sw-lap" data-i18n-label="lap">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <div id="flash" class="flash" aria-hidden="true"></div>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>
