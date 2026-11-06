@@ -1,0 +1,134 @@
+# Timer-Escalada: Project Brief for Claude Code
+
+> Status: early stage. The repository currently contains only a title README, an MIT LICENSE, and a single commit. Everything marked **[TO CONFIRM]** is a decision the owner still needs to make. Ask before assuming.
+
+## 1. What we are building
+
+A light, fast, online sports timer and Tabata/interval timer for mobile browsers.
+
+- Hosted as a static site on **GitHub Pages** from the repository `Unoquedadomas93/Timer-Escalada` (branch `main`).
+- Target: runs well on a phone, opens instantly, and keeps working **offline** once the page has been loaded once.
+- Name hint: "Escalada" is Spanish for climbing. The name suggests the app may be aimed at climbers and climbing-style training (bouldering rounds, hangboard intervals, rest periods). **[TO CONFIRM]** whether climbing is the main use case or just one of several sports.
+- Language: the project description is in English. **[TO CONFIRM]** the UI language(s). The owner's account and the existing reference app are Spanish-speaking, so Spanish plus English is a likely choice.
+
+## 2. Reference app
+
+The owner's benchmark is **Interval Timer Plus & Tabata** (App Store id 1279716547, developer ArGames). Use it as a feature reference, not as code to copy.
+
+Features observed on its App Store listing:
+- Configurable work/rest intervals, rounds and cycles, shown as counts and durations.
+- Stopwatch / interval stopwatch mode.
+- Timer keeps running in the background.
+- Full-screen flash cue when a phase changes.
+- Unlimited saved custom timers with a history of past workouts.
+- Voice guidance.
+- Ticking and phase-change sounds, plus a cooldown period after a workout.
+
+Lessons from its reviews (1-star reviews complaining about paywalls):
+- Users reacted badly when a free app began charging for basic use and when features were tied to leaving reviews.
+- **Decision for this project:** the core timer must stay free and must never ask for payment or a review to unlock basic use. **[TO CONFIRM]** whether any paid option is planned at all.
+
+## 3. Core requirements
+
+### Functional (MVP)
+1. **Timer presets**: create, edit, delete and save named workouts. Store them in `localStorage`.
+2. **Interval engine**: work phase, rest phase, rounds, optional cycles, and optional cooldown.
+3. **Tabata preset**: 20 s work / 10 s rest × 8 rounds, editable.
+4. **Plain stopwatch / countdown** for sports that do not need intervals.
+5. **Controls**: start, pause, resume, reset, skip phase.
+6. **Cues**: sound and vibration (where supported) at phase change and the last 3 seconds of each phase. A full-screen colour flash for visibility.
+7. **Screen wake lock** while a timer is running (where supported).
+8. **Background-safe timing**: compute elapsed time from timestamps (`Date.now()` / `performance.now()`), not from counting `setInterval` ticks, so the timer stays accurate when the tab is throttled.
+9. **Workout history**: log completed sessions (date, preset name, total duration) in `localStorage`.
+
+### Non-functional
+- **Speed**: no framework runtime if avoidable. Target a total download under ~100 KB gzipped for the first load. **[TO CONFIRM]** whether vanilla JS is acceptable or a framework is wanted.
+- **Offline**: a service worker caches the app shell and assets. Must work with the network disabled after the first visit.
+- **Mobile first**: large tap targets, readable digits from a distance, no horizontal scrolling at 360 px width.
+- **Accessibility**: ARIA labels on controls, sufficient contrast in both light and dark mode, and an option to reduce flashing.
+- **Privacy**: no accounts, no analytics, no third-party trackers, no ads. All data stays on the device.
+
+### Out of scope for MVP
+- User accounts or cloud sync.
+- Native apps (iOS/Android) and Apple Watch.
+- In-app purchases or subscriptions.
+
+## 4. Technical plan (proposed)
+
+| Area | Proposal | Status |
+|---|---|---|
+| Stack | Static HTML, CSS and ES modules, no build step | [TO CONFIRM] |
+| Hosting | GitHub Pages from `main` (root or `/docs`) | [TO CONFIRM] which folder |
+| Offline | Service worker with versioned cache (`CACHE_VERSION` constant) | Proposed |
+| Storage | `localStorage` for presets and history, with a JSON schema version field | Proposed |
+| Audio | Web Audio API, with short sounds generated or bundled as small files | Proposed |
+| Testing | Plain-JS unit tests for the interval engine (pure functions, no DOM) | Proposed |
+| Lint/format | Optional; keep dependencies at zero for MVP | Proposed |
+
+### Suggested file layout
+```
+/
+├── index.html          # single page app shell
+├── manifest.webmanifest
+├── sw.js               # service worker (offline cache)
+├── css/
+│   └── styles.css
+├── js/
+│   ├── app.js          # UI wiring
+│   ├── engine.js       # pure interval/timer logic (testable)
+│   ├── storage.js      # localStorage read/write with schema version
+│   ├── audio.js        # sounds and vibration
+│   └── presets.js      # default presets (Tabata, etc.)
+├── assets/
+│   ├── icons/          # PWA icons
+│   └── sounds/         # optional audio files
+├── tests/
+│   └── engine.test.js
+├── LICENSE             # MIT (already present)
+└── README.md
+```
+
+### Interval engine contract
+- Input: an array of phases, each `{ name, seconds, cue }`, plus a repeat count.
+- Output: a stream of state snapshots `{ phaseIndex, round, secondsRemaining, totalRemaining, status }`.
+- Must be deterministic and free of DOM calls so it can be unit-tested.
+- Time source is injectable (`now()` function) so tests can advance time manually.
+
+## 5. Acceptance criteria for MVP
+
+- [ ] Tabata preset runs 8 rounds of 20 s / 10 s with correct sound cues and final-round message.
+- [ ] A custom workout can be created, saved, reloaded after a browser restart, and deleted.
+- [ ] Timer stays within ±1 s of wall-clock time after 10 minutes with the screen locked or the tab backgrounded.
+- [ ] After one successful load, the app opens and runs with the network disabled.
+- [ ] Lighthouse mobile: Performance ≥ 90, Accessibility ≥ 90, PWA installable.
+- [ ] No console errors on Chrome, Safari iOS and Android Chrome.
+- [ ] Interval engine unit tests pass for: normal sequence, pause/resume, skip, reset, zero-second rest, and end of workout.
+
+## 6. Working rules for the agent
+
+1. **Ask before deciding** anything marked [TO CONFIRM]. Do not invent product scope.
+2. Keep the MVP small. Prefer one well-tested feature over several half-built ones.
+3. Do not add dependencies without asking. Do not add tracking, ads or payment code.
+4. Keep the timing logic pure and tested. Never rely on `setInterval` count for elapsed time.
+5. When changing cached assets, bump `CACHE_VERSION` in `sw.js`.
+6. Write commit messages in English, imperative mood, one logical change per commit.
+7. Update this file when a [TO CONFIRM] item is resolved.
+
+## 7. Open questions for the owner
+
+1. Is the primary audience climbers, or general sports and HIIT users?
+2. UI language: Spanish, English, or both?
+3. Should the app stay 100% free forever, or is a one-time paid "pro" option planned?
+4. Which GitHub Pages folder should be published?
+5. Vanilla JS, or a framework (e.g., Svelte, Preact)?
+6. Are custom sounds required, or are generated tones enough?
+7. Is an installable PWA (home-screen icon) required for the MVP?
+8. Any brand colours, logo or name styling to follow?
+
+## 8. Glossary
+
+- **Round**: one work phase followed by its rest phase.
+- **Cycle**: a group of rounds that can be repeated.
+- **Tabata**: 20 s work / 10 s rest, 8 rounds, popularised as high-intensity interval training.
+- **Cooldown**: optional final phase after the workout ends.
+- **Phase cue**: sound, vibration or visual flash signalling a change.
