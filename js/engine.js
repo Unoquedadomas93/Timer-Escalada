@@ -248,3 +248,27 @@ export function remainingCounts(s) {
   const cyclesLeft = cycles - phase.cycle + (cycleDone ? 0 : 1);
   return { rounds: cycleDone ? rounds : roundsLeft, cycles: cyclesLeft };
 }
+
+/**
+ * Lap timer ("lapso de tiempo"): an optional get-ready countdown, then a
+ * count-up clock that beeps every `lapSec`.
+ * @returns {{phase:'prepare'|'lap', secondsRemaining:number, elapsed:number, lapsDone:number, toNext:number|null}}
+ */
+export function lapState(elapsedMs, prepareSec, lapSec) {
+  const prepMs = Math.max(0, prepareSec) * 1000;
+  const e = Math.max(0, elapsedMs);
+  if (e < prepMs) {
+    return { phase: 'prepare', secondsRemaining: Math.ceil((prepMs - e) / 1000), elapsed: 0, lapsDone: 0, toNext: null };
+  }
+  const le = e - prepMs;
+  const lapMs = Math.max(0, lapSec) * 1000;
+  const lapsDone = lapMs > 0 ? Math.floor(le / lapMs) : 0;
+  const toNext = lapMs > 0 ? Math.ceil((lapMs - (le - lapsDone * lapMs)) / 1000) : null;
+  return { phase: 'lap', secondsRemaining: 0, elapsed: le, lapsDone, toNext };
+}
+
+/** Setup-menu style: 5 -> ":05", 180 -> "03:00", 3725 -> "1:02:05". */
+export function formatShort(totalSeconds) {
+  const s = Math.max(0, Math.floor(totalSeconds));
+  return s < 60 ? `:${String(s).padStart(2, '0')}` : formatClock(s);
+}
