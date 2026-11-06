@@ -1,6 +1,6 @@
 // Offline cache for the app shell. Bump CACHE_VERSION whenever any cached
 // file changes so clients pick up the new version.
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const CACHE = `timer-escalada-${CACHE_VERSION}`;
 const ASSETS = [
   './',
