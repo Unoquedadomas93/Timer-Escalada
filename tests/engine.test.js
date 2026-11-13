@@ -269,3 +269,21 @@ test('countdown beeps: once per second at 3, 2, 1', async () => {
   assert.equal(isCountdownSecond(3, 3), false);
   assert.equal(isCountdownSecond(4, 0), false);
 });
+
+test('loud beep: full scale, never clips, 1050 Hz, no clicks', async () => {
+  const { loudBeepSamples } = await import('../js/audio.js');
+  const rate = 48000;
+  const x = loudBeepSamples(rate, 0.6);
+  assert.equal(x.length, Math.round(rate * 0.6));
+  let peak = 0;
+  let sumSq = 0;
+  for (const v of x) { peak = Math.max(peak, Math.abs(v)); sumSq += v * v; }
+  assert.ok(peak <= 0.99 + 1e-6, `peak ${peak}`);
+  assert.ok(peak > 0.98, `peak ${peak}`);
+  assert.ok(Math.sqrt(sumSq / x.length) > 0.9, 'much louder than a sine (RMS 0.69)');
+  assert.equal(x[0], 0); // fades in from silence
+  assert.ok(Math.abs(x[x.length - 1]) < 1e-6); // and back out
+  let crossings = 0; // rising zero crossings = cycles
+  for (let i = 1; i < x.length; i++) if (x[i - 1] < 0 && x[i] >= 0) crossings++;
+  assert.ok(Math.abs(crossings / 0.6 - 1050) < 5, `${crossings / 0.6} Hz`);
+});

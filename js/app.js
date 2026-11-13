@@ -6,11 +6,14 @@ import {
 import { loadStore, saveStore, newId, DEFAULT_SETTINGS } from './storage.js';
 import { defaultPresets, EMPTY_PRESET } from './presets.js';
 import { unlockAudio, resumeAudio, cue, speak } from './audio.js';
+import { keepAwake } from './keepawake.js';
 import { detectLang, makeT, LANGS } from './i18n.js';
 
-const APP_VERSION = '0.3.2';
+const APP_VERSION = '0.4.0';
 const TICK_MS = 100;
-const MAX_DURATION = 5999; // 99:59
+const MAX_MINUTES = 15;
+const MAX_DURATION = MAX_MINUTES * 60 + 59; // 15:59
+const MAX_COUNT = 99;
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -73,20 +76,10 @@ function flash() {
   f.classList.add('on');
 }
 
-let wakeLock = null;
-async function lockScreen() {
-  try {
-    if ('wakeLock' in navigator && !wakeLock) {
-      wakeLock = await navigator.wakeLock.request('screen');
-      wakeLock.addEventListener('release', () => { wakeLock = null; });
-    }
-  } catch {
-    /* denied or unsupported */
-  }
-}
+// The screen stays on whenever the app is open (see keepawake.js). This is
+// called after every start/pause/reset too, as a cheap retry.
 function updateWakeLock() {
-  if (Object.values(screens).some((s) => s.status() === 'running')) lockScreen();
-  else if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+  keepAwake();
 }
 
 /* ---------- history ---------- */
@@ -337,39 +330,67 @@ function makeLapScreen(root, cfg) {
 /* ---------- picker (bottom sheet) ---------- */
 
 let pickerDone = null;
+let pickerWheels = [];
 
-function holdRepeat(btn, fn) {
-  let timer = 0;
-  let delay = 0;
-  const stop = () => { clearTimeout(timer); timer = 0; };
-  const loop = () => { fn(); delay = Math.max(40, delay * 0.8); timer = setTimeout(loop, delay); };
-  btn.addEventListener('pointerdown', (e) => {
+const WHEEL_ITEM = 56; // px; must match .wheel-item height in styles.css
+
+/**
+ * A scroll-snapping wheel (like the iOS time picker). The numbers ignore taps
+ * and can't be selected; the wheel is moved by swiping, the mouse wheel or
+ * the arrow keys.
+ */
+function makeWheel({ min, max, value, label, pad = 2 }) {
+  const col = el('div', 'wheel-col');
+  const box = el('div', 'wheel-box');
+  const wheel = el('div', 'wheel');
+  wheel.tabIndex = 0;
+  wheel.setAttribute('role', 'spinbutton');
+  wheel.setAttribute('aria-label', label);
+  wheel.setAttribute('aria-valuemin', String(min));
+  wheel.setAttribute('aria-valuemax', String(max));
+  const list = el('div', 'wheel-list');
+  for (let v = min; v <= max; v++) list.append(el('div', 'wheel-item', String(v).padStart(pad, '0')));
+  wheel.append(list);
+  box.append(wheel, el('div', 'wheel-band'));
+  col.append(box, el('div', 'picker-unit', label));
+
+  const items = list.children;
+  const clamp = (v) => Math.min(max, Math.max(min, v));
+  let current = clamp(value);
+  const setCurrent = (v) => {
+    if (items[current - min]) items[current - min].classList.remove('is-on');
+    current = v;
+    items[current - min].classList.add('is-on');
+    wheel.setAttribute('aria-valuenow', String(current));
+  };
+  const fromScroll = () => clamp(min + Math.round(wheel.scrollTop / WHEEL_ITEM));
+  let raf = 0;
+  wheel.addEventListener('scroll', () => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      const v = fromScroll();
+      if (v !== current) setCurrent(v);
+    });
+  }, { passive: true });
+  wheel.addEventListener('keydown', (e) => {
+    const step = { ArrowUp: -1, ArrowDown: 1, PageUp: -5, PageDown: 5 }[e.key];
+    if (!step) return;
     e.preventDefault();
-    fn();
-    delay = 380;
-    timer = setTimeout(loop, delay);
+    const v = clamp(current + step);
+    setCurrent(v);
+    wheel.scrollTo({ top: (v - min) * WHEEL_ITEM, behavior: 'smooth' });
   });
-  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) btn.addEventListener(ev, stop);
-  btn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } });
-}
 
-function pickerColumn(unit, get, set, max) {
-  const col = el('div', 'picker-col');
-  const up = el('button', 'picker-step', '+');
-  up.type = 'button';
-  up.setAttribute('aria-label', `+ ${unit}`);
-  const val = el('div', 'picker-val');
-  val.setAttribute('aria-live', 'polite');
-  const down = el('button', 'picker-step', '−');
-  down.type = 'button';
-  down.setAttribute('aria-label', `− ${unit}`);
-  const u = el('div', 'picker-unit', unit);
-  const show = () => { val.textContent = String(get()).padStart(2, '0'); };
-  holdRepeat(up, () => { set(get() >= max ? 0 : get() + 1); show(); });
-  holdRepeat(down, () => { set(get() <= 0 ? max : get() - 1); show(); });
-  show();
-  col.append(up, val, down, u);
-  return col;
+  return {
+    el: col,
+    // Call once the sheet is visible: hidden elements can't be scrolled.
+    show() {
+      wheel.scrollTop = (current - min) * WHEEL_ITEM;
+      setCurrent(current);
+    },
+    value: () => fromScroll(),
+  };
 }
 
 /**
@@ -382,33 +403,34 @@ function openPicker(opts, onDone) {
   $('.js-dot', box).className = `picker-dot js-dot dot ${opts.dot}`;
   const cols = $('.js-cols', box);
   cols.replaceChildren();
-  let value = opts.value;
   if (opts.type === 'duration') {
-    let m = Math.floor(value / 60);
-    let s = value % 60;
-    cols.append(
-      pickerColumn(t('minutes'), () => m, (v) => { m = v; }, 99),
-      el('div', 'picker-colon', ':'),
-      pickerColumn(t('seconds'), () => s, (v) => { s = v; }, 59),
-    );
-    pickerDone = () => onDone(Math.min(MAX_DURATION, m * 60 + s));
+    const v = Math.min(MAX_DURATION, Math.max(0, opts.value));
+    const m = makeWheel({ min: 0, max: MAX_MINUTES, value: Math.floor(v / 60), label: t('minutes') });
+    const s = makeWheel({ min: 0, max: 59, value: v % 60, label: t('seconds') });
+    cols.append(m.el, el('div', 'picker-colon', ':'), s.el);
+    pickerWheels = [m, s];
+    pickerDone = () => onDone(Math.min(MAX_DURATION, m.value() * 60 + s.value()));
   } else {
     const min = opts.min ?? 1;
-    const max = opts.max ?? 99;
-    const col = pickerColumn(opts.title, () => value, (v) => { value = Math.min(max, Math.max(min, v || min)); }, max);
-    cols.append(col);
-    pickerDone = () => onDone(value);
+    const max = opts.max ?? MAX_COUNT;
+    const w = makeWheel({ min, max, value: opts.value, label: opts.title, pad: 1 });
+    cols.append(w.el);
+    pickerWheels = [w];
+    pickerDone = () => onDone(w.value());
   }
   box.hidden = false;
-  $('.js-ok', box).focus();
+  for (const w of pickerWheels) w.show();
+  $('.js-ok', box).focus({ preventScroll: true });
 }
 
 function closePicker(commit) {
   const box = $('#picker');
   if (box.hidden) return;
-  box.hidden = true;
+  // Read the wheels before hiding them: a hidden scroller reports position 0.
   if (commit && pickerDone) pickerDone();
+  box.hidden = true;
   pickerDone = null;
+  pickerWheels = [];
 }
 
 /* ---------- setup menu (CANCELAR · title · GUARDAR) ---------- */
@@ -775,8 +797,13 @@ function bind() {
     tick();
   });
 
-  // Any tap re-unlocks audio (iOS can drop it after the screen locks).
-  document.addEventListener('pointerdown', unlockAudio, { passive: true });
+  // Every tap re-unlocks audio (iOS can drop it after the screen locks) and
+  // re-arms the keep-awake. For touch, only touchend/click count as a user
+  // gesture on iOS, so listen to those as well as pointerdown.
+  const onGesture = () => { unlockAudio(); keepAwake(); };
+  for (const ev of ['pointerdown', 'touchend', 'click']) {
+    document.addEventListener(ev, onGesture, { passive: true, capture: true });
+  }
 }
 
 function registerServiceWorker() {
@@ -800,6 +827,7 @@ applyI18n();
 history.replaceState({ view: 'app' }, '');
 for (const s of Object.values(screens)) s.load();
 showTab('tabata');
+keepAwake(); // Android can take the wake lock straight away; iOS waits for the first tap
 persist(); // stores seeded presets on first run
 setInterval(tick, TICK_MS);
 registerServiceWorker();

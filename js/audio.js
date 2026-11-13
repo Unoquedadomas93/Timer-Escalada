@@ -74,31 +74,55 @@ function tone(freq, duration, delay = 0, volume = 0.6, type = 'sine') {
   osc.stop(t0 + duration + 0.02);
 }
 
-// The app's single sound: one loud, steady, high-pitched pure tone, like a
-// hearing-test beep. A sine wave at almost full scale, with 5 ms fades so it
-// starts and stops cleanly without clicks.
+// The app's single sound: one steady 1050 Hz beep, made as loud as a phone
+// speaker can play it.
+//
+// Why it is loud: a pure sine wave is the quietest-sounding wave at a given
+// peak level. Here the sine is driven hard through tanh() until it is almost
+// a square wave, then normalised to full scale. That
+//  - packs more energy into the same peak (RMS ~0.95 instead of ~0.69), and
+//  - adds overtones at 3150 Hz, 5250 Hz, ... which is where phone speakers
+//    are strongest and where human hearing is most sensitive.
+// The pitch you hear is still 1050 Hz. The samples are pre-rendered once into
+// an AudioBuffer and never exceed full scale, so nothing distorts further.
 const SIREN_SECONDS = 0.6;
 const TICK_SECONDS = 0.2; // countdown beeps in the last 3 s of a phase
-const SIREN_VOLUME = 0.98;
-const SIREN_HIGH = 1050; // Hz
+const SIREN_HZ = 1050;
+const DRIVE = 8; // 0 would be a pure sine; higher is closer to a square wave
+const PEAK = 0.99;
+const FADE_SECONDS = 0.004; // avoids clicks at start and end
+
+/** Pure function so it can be tested: one beep's samples at `rate` Hz. */
+export function loudBeepSamples(rate, seconds, hz = SIREN_HZ, drive = DRIVE) {
+  const n = Math.round(rate * seconds);
+  const fade = Math.max(1, Math.round(rate * FADE_SECONDS));
+  const norm = PEAK / Math.tanh(drive);
+  const out = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const env = Math.min(1, i / fade, (n - 1 - i) / fade);
+    out[i] = env * norm * Math.tanh(drive * Math.sin((2 * Math.PI * hz * i) / rate));
+  }
+  return out;
+}
+
+const buffers = new Map();
+function beepBuffer(seconds) {
+  if (!buffers.has(seconds)) {
+    const data = loudBeepSamples(ctx.sampleRate, seconds);
+    const buf = ctx.createBuffer(1, data.length, ctx.sampleRate);
+    buf.copyToChannel(data, 0);
+    buffers.set(seconds, buf);
+  }
+  return buffers.get(seconds);
+}
 
 function siren(seconds = SIREN_SECONDS) {
   if (!ctx) return;
   if (ctx.state !== 'running') ctx.resume().catch(() => {});
-  const t0 = ctx.currentTime + 0.005;
-  const t1 = t0 + seconds;
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0, t0);
-  gain.gain.linearRampToValueAtTime(SIREN_VOLUME, t0 + 0.005);
-  gain.gain.setValueAtTime(SIREN_VOLUME, t1 - 0.005);
-  gain.gain.linearRampToValueAtTime(0, t1);
-  gain.connect(ctx.destination);
-  const osc = ctx.createOscillator();
-  osc.type = 'sine';
-  osc.frequency.value = SIREN_HIGH;
-  osc.connect(gain);
-  osc.start(t0);
-  osc.stop(t1 + 0.02);
+  const src = ctx.createBufferSource();
+  src.buffer = beepBuffer(seconds);
+  src.connect(ctx.destination);
+  src.start(ctx.currentTime + 0.005);
 }
 
 const VIBRATIONS = {
