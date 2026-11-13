@@ -48,6 +48,10 @@ body {
   -webkit-tap-highlight-color: transparent;
   overflow: hidden;
   overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  cursor: default;
 }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
@@ -469,30 +473,52 @@ button { cursor: pointer; }
 .picker-head { display: flex; align-items: center; justify-content: center; gap: 12px; }
 .picker-dot { width: 20px; height: 20px; border-radius: 50%; }
 .picker-title { margin: 0; font-weight: 400; font-size: 2.1rem; line-height: 1; text-transform: uppercase; }
-.picker-cols { display: flex; justify-content: center; align-items: center; gap: 10px; }
-.picker-col { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.picker-step {
-  width: 92px;
-  height: 58px;
-  border: 0;
-  border-radius: 16px;
-  background: var(--surface);
-  color: var(--text);
-  font-size: 2.4rem;
-  line-height: 1;
-  touch-action: manipulation;
+.picker-cols { display: flex; justify-content: center; align-items: flex-start; gap: 6px; }
+
+/* Sliding wheel (scroll-snap). 5 rows visible, the middle one is selected. */
+.wheel-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.wheel-box { position: relative; width: 112px; }
+.wheel {
+  height: calc(56px * 5);
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 32%, #000 68%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 32%, #000 68%, transparent 100%);
+  outline: none;
+}
+.wheel::-webkit-scrollbar { display: none; }
+.wheel:focus-visible + .wheel-band { border-color: var(--green); }
+.wheel-list { padding: calc(56px * 2) 0; }
+.wheel-item {
+  height: 56px;
+  line-height: 60px;
+  text-align: center;
+  font-size: 3.4rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  scroll-snap-align: center;
+  pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
 }
-.picker-val {
-  font-size: 5.2rem;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  min-width: 2ch;
-  text-align: center;
+.wheel-item.is-on { color: var(--text); }
+.wheel-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(56px * 2);
+  height: 56px;
+  border-top: 2px solid var(--surface-2);
+  border-bottom: 2px solid var(--surface-2);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  pointer-events: none;
 }
 .picker-unit { font-size: 1.3rem; color: var(--muted); text-transform: uppercase; }
-.picker-colon { font-size: 4.6rem; line-height: 1; padding-bottom: 28px; }
+.picker-colon { font-size: 3.6rem; line-height: 1; margin-top: calc(56px * 2 + 2px); }
 .picker-ok {
   min-height: 62px;
   border: 0;
