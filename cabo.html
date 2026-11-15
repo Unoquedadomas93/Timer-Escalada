@@ -63,7 +63,10 @@
   .note { background: var(--warn-soft); color: #7a3d05; border-radius: 10px; padding: 9px 12px; margin-bottom: 12px; font-weight: 600; }
   .win { background: var(--accent); color: #fff; border-radius: 14px; padding: 14px; margin-bottom: 14px; text-align: center; }
   .win b { display: block; font-size: 1.35rem; }
-  .player { display: grid; grid-template-columns: minmax(0,1fr) auto 84px; align-items: center; gap: 10px; padding: 8px 0; }
+  .player { display: grid; grid-template-columns: minmax(0,1fr) auto auto; align-items: center; gap: 10px; padding: 8px 0; }
+  .entry { display: flex; align-items: center; gap: 6px; }
+  .entry .pts { width: 72px; }
+  .neg { width: 38px; height: 46px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--muted); font-size: 1.15rem; font-weight: 700; padding: 0; }
   .player + .player { border-top: 1px solid var(--line); }
   .pname { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .tag { display: inline-block; font-size: .72rem; font-weight: 700; border-radius: 999px; padding: 1px 7px; margin-left: 4px; vertical-align: middle; }
@@ -118,7 +121,7 @@
       names: 'Nombres', player: 'Jugador', start: 'Empezar',
       round: 'Ronda', of: 'de', limit: 'Límite', addRound: 'Sumar ronda', undo: 'Deshacer ronda',
       fill: 'Escribe los puntos de esta ronda.', history: 'Rondas', total: 'Total',
-      lead: 'va ganando', halfTag: '½ usado', out: 'pasó el límite',
+      lead: 'va ganando', sign: 'cambiar signo', halfTag: '½ usado', out: 'pasó el límite',
       halved: (n, a, b) => `${n} llegó a ${a} exactos: baja a ${b}.`,
       over: 'Fin de la partida', winner: 'Gana', winners: 'Empate', withPts: (p) => `con ${p} puntos`,
       confirmNew: '¿Empezar una partida nueva? Se borrará el marcador actual.',
@@ -131,7 +134,7 @@
       names: 'Names', player: 'Player', start: 'Start',
       round: 'Round', of: 'of', limit: 'Limit', addRound: 'Add round', undo: 'Undo round',
       fill: "Enter this round's points.", history: 'Rounds', total: 'Total',
-      lead: 'leading', halfTag: '½ used', out: 'over the limit',
+      lead: 'leading', sign: 'change sign', halfTag: '½ used', out: 'over the limit',
       halved: (n, a, b) => `${n} hit exactly ${a}: drops to ${b}.`,
       over: 'Game over', winner: 'Winner', winners: 'Tie', withPts: (p) => `with ${p} points`,
       confirmNew: 'Start a new game? The current score will be erased.',
@@ -148,12 +151,12 @@
 <tr><th>9 · 10</th><td><b>Spy:</b> mira una carta de otro jugador.</td></tr>
 <tr><th>J · Q</th><td><b>Swap:</b> cambia una de tus cartas por la de otro jugador, sin mirarlas.</td></tr>
 </table>
-<p class="muted small">Valores: Joker = 0, As (A) = 1, Jota (J) = 11, Q = 12, K = 13. Las demás cartas no tienen poder.</p></div>
+<p class="muted small">Valores: Joker = −1, K roja = 0, As (A) = 1, Jota (J) = 11, Q = 12, K negra = 13. Las demás cartas no tienen poder.</p></div>
 <div class="card"><h2>Objetivo</h2>
 <p>Terminar cada ronda con la <b>menor suma</b> de puntos en tus cartas. Al final gana quien tenga menos puntos.</p></div>
 <div class="card"><h2>Preparación</h2>
 <ul>
-<li>Baraja normal con los 2 Jokers (54 cartas). Valores: Joker = 0, As = 1, del 2 al 10 su número, J = 11, Q = 12, K = 13.</li>
+<li>Baraja normal con los 2 Jokers (54 cartas). Valores: Joker = −1, K roja = 0, As = 1, del 2 al 10 su número, J = 11, Q = 12, K negra = 13.</li>
 <li>Cada jugador recibe <b>4 cartas boca abajo</b> en fila y mira <b>2</b> de ellas una sola vez.</li>
 <li>El resto forma el mazo. Se voltea una carta para empezar el descarte.</li>
 </ul></div>
@@ -176,7 +179,7 @@
 <ul>
 <li><b>Quien dijo Cabo:</b> si tiene la suma más baja (o empata), anota <b>0</b>. Si no, anota su suma <b>+ 10</b> de castigo.</li>
 <li><b>Los demás:</b> anotan la suma de sus cartas.</li>
-<li><b>Kamikaze:</b> si terminas con exactamente dos Q y dos K, anotas 0 y todos los demás anotan 50.</li>
+<li><b>Kamikaze:</b> si terminas con exactamente dos Q y las dos K negras, anotas 0 y todos los demás anotan 50.</li>
 </ul></div>
 <div class="card"><h2>Fin de la partida</h2>
 <ul>
@@ -191,12 +194,12 @@
 <tr><th>9 · 10</th><td><b>Spy:</b> look at another player's card.</td></tr>
 <tr><th>J · Q</th><td><b>Swap:</b> trade one of your cards with another player's, without looking.</td></tr>
 </table>
-<p class="muted small">Values: Joker = 0, Ace (A) = 1, Jack (J) = 11, Q = 12, K = 13. The other cards have no power.</p></div>
+<p class="muted small">Values: Joker = −1, red K = 0, Ace (A) = 1, Jack (J) = 11, Q = 12, black K = 13. The other cards have no power.</p></div>
 <div class="card"><h2>Goal</h2>
 <p>End each round with the <b>lowest total</b> on your cards. At the end, the player with the fewest points wins.</p></div>
 <div class="card"><h2>Setup</h2>
 <ul>
-<li>Standard deck with the 2 Jokers (54 cards). Values: Joker = 0, Ace = 1, 2 to 10 their number, J = 11, Q = 12, K = 13.</li>
+<li>Standard deck with the 2 Jokers (54 cards). Values: Joker = −1, red K = 0, Ace = 1, 2 to 10 their number, J = 11, Q = 12, black K = 13.</li>
 <li>Each player gets <b>4 face-down cards</b> in a row and peeks at <b>2</b> of them once.</li>
 <li>The rest is the draw pile. Flip one card to start the discard pile.</li>
 </ul></div>
@@ -219,7 +222,7 @@
 <ul>
 <li><b>The Cabo caller:</b> with the lowest total (or tied), scores <b>0</b>. Otherwise, scores their total <b>+ 10</b> penalty.</li>
 <li><b>Everyone else:</b> scores the total of their cards.</li>
-<li><b>Kamikaze:</b> if you end with exactly two Qs and two Ks, you score 0 and everyone else scores 50.</li>
+<li><b>Kamikaze:</b> if you end with exactly two Qs and both black Ks, you score 0 and everyone else scores 50.</li>
 </ul></div>
 <div class="card"><h2>End of game</h2>
 <ul>
@@ -313,7 +316,8 @@
       const lead = played > 0 && tot === c.min ? `<span class="tag lead">${c.over ? '★' : t('lead')}</span>` : '';
       const half = c.used[i] ? `<span class="tag half">${t('halfTag')}</span>` : '';
       const input = c.over ? '<span></span>' :
-        `<input class="pts" type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="999" placeholder="0" data-pts="${i}" value="${esc(s.draft[i] ?? '')}" aria-label="${esc(nameOf(i))}: ${t('points')}">`;
+        `<div class="entry"><button type="button" class="neg" data-neg="${i}" aria-label="${esc(nameOf(i))}: ${t('sign')}">±</button>` +
+        `<input class="pts" type="text" inputmode="numeric" pattern="-?[0-9]*" maxlength="4" autocomplete="off" placeholder="0" data-pts="${i}" value="${esc(s.draft[i] ?? '')}" aria-label="${esc(nameOf(i))}: ${t('points')}"></div>`;
       return `<div class="player"><div class="pname">${esc(nameOf(i))}${lead}${half}</div>
         <div class="total${tot > s.points ? ' out' : ''}">${tot}</div>${input}</div>`;
     }).join('');
@@ -367,12 +371,19 @@
       const [min, max, step] = LIMITS[b.dataset.step];
       s[b.dataset.step] = Math.min(max, Math.max(min, s[b.dataset.step] + step * Number(b.dataset.d)));
       save(); render();
+    } else if (b.dataset.neg != null) {
+      // Joker = -1 can make a round negative; the digit pad has no minus key.
+      const i = Number(b.dataset.neg);
+      const box = document.querySelector(`[data-pts="${i}"]`);
+      const cur = String(s.draft[i] ?? '');
+      s.draft[i] = box.value = cur.startsWith('-') ? cur.slice(1) : `-${cur}`;
+      save(); box.focus();
     } else if (b.id === 'start') {
       s.started = true; s.history = []; s.draft = Array(MAXP).fill(''); save(); render(); window.scrollTo(0, 0);
     } else if (b.id === 'add') {
       const vals = s.draft.slice(0, s.n).map((v) => String(v ?? '').trim());
-      if (vals.every((v) => v === '')) { $('#hint').hidden = false; return; }
-      s.history.push(vals.map((v) => Math.min(999, Math.max(0, Math.round(Number(v)) || 0))));
+      if (vals.every((v) => v === '' || v === '-')) { $('#hint').hidden = false; return; }
+      s.history.push(vals.map((v) => Math.min(999, Math.max(-99, Math.round(Number(v)) || 0))));
       s.draft = Array(MAXP).fill('');
       save(); render(); window.scrollTo(0, 0);
     } else if (b.id === 'undo') {
@@ -387,7 +398,10 @@
   // Typing is saved straight away (no re-render, so the keyboard stays open).
   document.addEventListener('input', (e) => {
     const el = e.target;
-    if (el.dataset.pts != null) s.draft[Number(el.dataset.pts)] = el.value;
+    if (el.dataset.pts != null) {
+      el.value = el.value.replace(/[^\d-]/g, '').replace(/(?!^)-/g, ''); // digits, optional leading minus
+      s.draft[Number(el.dataset.pts)] = el.value;
+    }
     else if (el.dataset.name != null) s.names[Number(el.dataset.name)] = el.value;
     else return;
     save();
