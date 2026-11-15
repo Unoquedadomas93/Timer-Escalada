@@ -85,7 +85,8 @@
   #rules h2 { margin-top: 4px; }
   #rules ul, #rules ol { margin: 6px 0 10px; padding-left: 1.25em; }
   #rules li { margin: 4px 0; }
-  #rules table td, #rules table th { text-align: left; white-space: normal; }
+  #rules table td { text-align: left; white-space: normal; }
+  #rules table th { text-align: left; white-space: nowrap; max-width: none; font-size: 1rem; color: var(--accent); }
 </style>
 </head>
 <body>
@@ -140,29 +141,30 @@
 
   const RULES = {
     es: `
+<div class="card"><h2>Poderes</h2>
+<p class="muted small">Solo valen si robas la carta del mazo y la descartas enseguida.</p>
+<table>
+<tr><th>7 · 8</th><td><b>Peek:</b> mira una de tus cartas.</td></tr>
+<tr><th>9 · 10</th><td><b>Spy:</b> mira una carta de otro jugador.</td></tr>
+<tr><th>J · Q</th><td><b>Swap:</b> cambia una de tus cartas por la de otro jugador, sin mirarlas.</td></tr>
+</table>
+<p class="muted small">Valores: Jota (J) = 11, Q = 12, K = 13. La K no tiene poder.</p></div>
 <div class="card"><h2>Objetivo</h2>
 <p>Terminar cada ronda con la <b>menor suma</b> de puntos en tus cartas. Al final gana quien tenga menos puntos.</p></div>
 <div class="card"><h2>Preparación</h2>
 <ul>
-<li>Baraja de 52 cartas con valores del 0 al 13 (dos 0, dos 13 y cuatro de cada número del 1 al 12).</li>
+<li>Baraja de 52 cartas con valores del 0 al 13 (dos 0, dos K y cuatro de cada carta del 1 a la Q; J = 11, Q = 12, K = 13).</li>
 <li>Cada jugador recibe <b>4 cartas boca abajo</b> en fila y mira <b>2</b> de ellas una sola vez.</li>
 <li>El resto forma el mazo. Se voltea una carta para empezar el descarte.</li>
 </ul></div>
 <div class="card"><h2>Tu turno</h2>
 <p>Elige una de estas tres opciones:</p>
 <ol>
-<li><b>Robar del mazo.</b> Mira la carta y: cámbiala por una de las tuyas, descártala, o (si es 7–12) descártala para usar su poder.</li>
+<li><b>Robar del mazo.</b> Mira la carta y: cámbiala por una de las tuyas, descártala, o (si es del 7 a la Q) descártala para usar su poder.</li>
 <li><b>Tomar la carta de arriba del descarte.</b> Debes cambiarla por una de tus cartas.</li>
 <li><b>Decir «Cabo».</b> No robas. Los demás juegan un último turno y se termina la ronda.</li>
 </ol>
 <p class="muted small">La carta que sale de tu fila va al descarte boca arriba.</p></div>
-<div class="card"><h2>Poderes</h2>
-<p class="muted small">Solo valen si robas la carta del mazo y la descartas enseguida.</p>
-<table>
-<tr><th>7 · 8</th><td><b>Peek:</b> mira una de tus cartas.</td></tr>
-<tr><th>9 · 10</th><td><b>Spy:</b> mira una carta de otro jugador.</td></tr>
-<tr><th>11 · 12</th><td><b>Swap:</b> cambia una de tus cartas por la de otro jugador, sin mirarlas.</td></tr>
-</table></div>
 <div class="card"><h2>Cambiar varias cartas</h2>
 <p>Si crees tener 2 o más cartas del <b>mismo valor</b>, puedes cambiarlas todas por la carta que tomaste. Muéstralas:</p>
 <ul>
@@ -174,7 +176,7 @@
 <ul>
 <li><b>Quien dijo Cabo:</b> si tiene la suma más baja (o empata), anota <b>0</b>. Si no, anota su suma <b>+ 10</b> de castigo.</li>
 <li><b>Los demás:</b> anotan la suma de sus cartas.</li>
-<li><b>Kamikaze:</b> si terminas con exactamente dos 12 y dos 13, anotas 0 y todos los demás anotan 50.</li>
+<li><b>Kamikaze:</b> si terminas con exactamente dos Q y dos K, anotas 0 y todos los demás anotan 50.</li>
 </ul></div>
 <div class="card"><h2>Fin de la partida</h2>
 <ul>
@@ -182,29 +184,30 @@
 <li><b>100 exactos:</b> si quedas exactamente en 100, tu puntaje baja a 50. Solo una vez por jugador. Este marcador lo hace solo.</li>
 </ul></div>`,
     en: `
+<div class="card"><h2>Powers</h2>
+<p class="muted small">They only work if you draw the card from the deck and discard it right away.</p>
+<table>
+<tr><th>7 · 8</th><td><b>Peek:</b> look at one of your own cards.</td></tr>
+<tr><th>9 · 10</th><td><b>Spy:</b> look at another player's card.</td></tr>
+<tr><th>J · Q</th><td><b>Swap:</b> trade one of your cards with another player's, without looking.</td></tr>
+</table>
+<p class="muted small">Values: Jack (J) = 11, Q = 12, K = 13. The K has no power.</p></div>
 <div class="card"><h2>Goal</h2>
 <p>End each round with the <b>lowest total</b> on your cards. At the end, the player with the fewest points wins.</p></div>
 <div class="card"><h2>Setup</h2>
 <ul>
-<li>52-card deck with values 0 to 13 (two 0s, two 13s and four of each number from 1 to 12).</li>
+<li>52-card deck with values 0 to 13 (two 0s, two Ks and four of each card from 1 to Q; J = 11, Q = 12, K = 13).</li>
 <li>Each player gets <b>4 face-down cards</b> in a row and peeks at <b>2</b> of them once.</li>
 <li>The rest is the draw pile. Flip one card to start the discard pile.</li>
 </ul></div>
 <div class="card"><h2>Your turn</h2>
 <p>Choose one of three options:</p>
 <ol>
-<li><b>Draw from the deck.</b> Look at the card and: swap it for one of yours, discard it, or (if it's 7–12) discard it to use its power.</li>
+<li><b>Draw from the deck.</b> Look at the card and: swap it for one of yours, discard it, or (if it's 7 to Q) discard it to use its power.</li>
 <li><b>Take the top discard.</b> You must swap it for one of your cards.</li>
 <li><b>Call "Cabo".</b> You don't draw. Everyone else takes one last turn and the round ends.</li>
 </ol>
 <p class="muted small">The card leaving your row goes face up on the discard pile.</p></div>
-<div class="card"><h2>Powers</h2>
-<p class="muted small">They only work if you draw the card from the deck and discard it right away.</p>
-<table>
-<tr><th>7 · 8</th><td><b>Peek:</b> look at one of your own cards.</td></tr>
-<tr><th>9 · 10</th><td><b>Spy:</b> look at another player's card.</td></tr>
-<tr><th>11 · 12</th><td><b>Swap:</b> trade one of your cards with another player's, without looking.</td></tr>
-</table></div>
 <div class="card"><h2>Swapping several cards</h2>
 <p>If you think you have 2 or more cards of the <b>same value</b>, you may swap them all for the card you took. Reveal them:</p>
 <ul>
@@ -216,7 +219,7 @@
 <ul>
 <li><b>The Cabo caller:</b> with the lowest total (or tied), scores <b>0</b>. Otherwise, scores their total <b>+ 10</b> penalty.</li>
 <li><b>Everyone else:</b> scores the total of their cards.</li>
-<li><b>Kamikaze:</b> if you end with exactly two 12s and two 13s, you score 0 and everyone else scores 50.</li>
+<li><b>Kamikaze:</b> if you end with exactly two Qs and two Ks, you score 0 and everyone else scores 50.</li>
 </ul></div>
 <div class="card"><h2>End of game</h2>
 <ul>
