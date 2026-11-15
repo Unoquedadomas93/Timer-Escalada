@@ -33,7 +33,9 @@
   }
   .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
   h1 { margin: 0; font-size: 1.5rem; letter-spacing: .02em; }
-  .lang { border: 1px solid var(--line); background: var(--card); border-radius: 999px; min-height: 36px; padding: 0 14px; font-weight: 600; }
+  .langs { display: flex; gap: 4px; }
+  .langs button { border: 1px solid var(--line); background: transparent; border-radius: 999px; min-width: 44px; min-height: 36px; padding: 0 10px; font-weight: 700; color: var(--muted); }
+  .langs button[aria-pressed="true"] { background: var(--card); color: var(--text); border-color: var(--text); }
   .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: #e9e3d4; border-radius: 12px; padding: 4px; }
   .tabs button { border: 0; background: transparent; border-radius: 9px; min-height: 42px; font-weight: 700; color: var(--muted); }
   .tabs button[aria-selected="true"] { background: var(--card); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
@@ -78,6 +80,9 @@
   .hint { color: var(--danger); font-weight: 600; margin: 8px 0 0; }
 
   .scroll { overflow-x: auto; }
+  .scroll table { table-layout: fixed; }
+  .scroll th, .scroll td { padding: 7px 4px; overflow: hidden; text-overflow: ellipsis; }
+  .scroll th:first-child { width: 4.2em; }
   table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
   th, td { padding: 7px 8px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
   th { font-size: .82rem; color: var(--muted); max-width: 6.5em; overflow: hidden; text-overflow: ellipsis; }
@@ -96,7 +101,11 @@
 <header>
   <div class="top">
     <h1>Cabo</h1>
-    <button class="lang" id="lang"></button>
+    <div class="langs" role="group" aria-label="Idioma / Sprache / Language">
+      <button data-lang="es" lang="es" aria-label="Español">ES</button>
+      <button data-lang="de" lang="de" aria-label="Deutsch">DE</button>
+      <button data-lang="en" lang="en" aria-label="English">EN</button>
+    </div>
   </div>
   <nav class="tabs" role="tablist">
     <button role="tab" data-tab="score"></button>
@@ -115,7 +124,7 @@
 
   const TXT = {
     es: {
-      title: 'Cabo · Marcador', tabScore: 'Marcador', tabRules: 'Reglas', other: 'EN',
+      title: 'Cabo · Marcador', tabScore: 'Marcador', tabRules: 'Reglas',
       newGame: 'Nueva partida', players: 'Jugadores', rounds: 'Rondas', roundsSub: 'La partida termina al completarlas',
       noLimit: 'Sin límite', points: 'Puntos', pointsSub: 'Pierde quien pase de este número',
       names: 'Nombres', player: 'Jugador', start: 'Empezar',
@@ -125,10 +134,11 @@
       halved: (n, a, b) => `${n} llegó a ${a} exactos: baja a ${b}.`,
       over: 'Fin de la partida', winner: 'Gana', winners: 'Empate', withPts: (p) => `con ${p} puntos`,
       confirmNew: '¿Empezar una partida nueva? Se borrará el marcador actual.',
+      reset: 'Reiniciar', confirmReset: '¿Poner el marcador en 0? Se mantienen los jugadores y los ajustes.',
       halfInfo: (a, b) => `Si alguien queda exactamente en ${a}, baja a ${b} (una vez por jugador).`,
     },
     en: {
-      title: 'Cabo · Score', tabScore: 'Score', tabRules: 'Rules', other: 'ES',
+      title: 'Cabo · Score', tabScore: 'Score', tabRules: 'Rules',
       newGame: 'New game', players: 'Players', rounds: 'Rounds', roundsSub: 'The game ends when they are done',
       noLimit: 'No limit', points: 'Points', pointsSub: 'Whoever goes over this number loses',
       names: 'Names', player: 'Player', start: 'Start',
@@ -138,7 +148,22 @@
       halved: (n, a, b) => `${n} hit exactly ${a}: drops to ${b}.`,
       over: 'Game over', winner: 'Winner', winners: 'Tie', withPts: (p) => `with ${p} points`,
       confirmNew: 'Start a new game? The current score will be erased.',
+      reset: 'Reset', confirmReset: 'Reset the score to 0? Players and settings are kept.',
       halfInfo: (a, b) => `If someone lands exactly on ${a}, they drop to ${b} (once per player).`,
+    },
+    de: {
+      title: 'Cabo · Punkte', tabScore: 'Punkte', tabRules: 'Regeln',
+      newGame: 'Neues Spiel', players: 'Spieler', rounds: 'Runden', roundsSub: 'Danach endet das Spiel',
+      noLimit: 'Kein Limit', points: 'Punkte', pointsSub: 'Wer diese Zahl überschreitet, verliert',
+      names: 'Namen', player: 'Spieler', start: 'Starten',
+      round: 'Runde', of: 'von', limit: 'Limit', addRound: 'Runde addieren', undo: 'Runde zurück',
+      fill: 'Trage die Punkte dieser Runde ein.', history: 'Runden', total: 'Summe',
+      lead: 'führt', sign: 'Vorzeichen wechseln', halfTag: '½ genutzt', out: 'über dem Limit',
+      halved: (n, a, b) => `${n} hat genau ${a}: fällt auf ${b}.`,
+      over: 'Spielende', winner: 'Sieger', winners: 'Gleichstand', withPts: (p) => `mit ${p} Punkten`,
+      confirmNew: 'Neues Spiel starten? Der aktuelle Punktestand wird gelöscht.',
+      reset: 'Zurücksetzen', confirmReset: 'Punktestand auf 0 setzen? Spieler und Einstellungen bleiben.',
+      halfInfo: (a, b) => `Wer genau ${a} erreicht, fällt auf ${b} (einmal pro Spieler).`,
     },
   };
 
@@ -229,13 +254,56 @@
 <li>The game ends when someone <b>goes over 100 points</b> (or the limit you choose). The lowest score wins.</li>
 <li><b>Exactly 100:</b> if you land exactly on 100, your score drops to 50. Only once per player. This scorekeeper does it for you.</li>
 </ul></div>`,
+    de: `
+<div class="card"><h2>Fähigkeiten</h2>
+<p class="muted small">Sie gelten nur, wenn du die Karte vom Stapel ziehst und sofort abwirfst.</p>
+<table>
+<tr><th>7 · 8</th><td><b>Peek:</b> Sieh dir eine deiner Karten an.</td></tr>
+<tr><th>9 · 10</th><td><b>Spy:</b> Sieh dir eine Karte eines Mitspielers an.</td></tr>
+<tr><th>J · Q</th><td><b>Swap:</b> Tausche eine deiner Karten mit der eines Mitspielers, ohne sie anzusehen.</td></tr>
+</table>
+<p class="muted small">Werte: Joker = −1, roter König = 0, Ass (A) = 1; 10, Bube (J), Dame (Q) und schwarzer König = 10. Die übrigen Karten haben keine Fähigkeit.</p></div>
+<div class="card"><h2>Ziel</h2>
+<p>Beende jede Runde mit der <b>niedrigsten Summe</b> auf deinen Karten. Am Ende gewinnt, wer die wenigsten Punkte hat.</p></div>
+<div class="card"><h2>Vorbereitung</h2>
+<ul>
+<li>Normales Kartenspiel mit den 2 Jokern (54 Karten). Werte: Joker = −1, roter König = 0, Ass = 1, 2 bis 9 ihr Zahlenwert; 10, Bube, Dame und schwarzer König zählen 10.</li>
+<li>Jeder Spieler erhält <b>4 verdeckte Karten</b> in einer Reihe und sieht sich einmal <b>2</b> davon an.</li>
+<li>Der Rest ist der Nachziehstapel. Eine Karte wird aufgedeckt und beginnt den Ablagestapel.</li>
+</ul></div>
+<div class="card"><h2>Dein Zug</h2>
+<p>Wähle eine von drei Möglichkeiten:</p>
+<ol>
+<li><b>Vom Stapel ziehen.</b> Sieh dir die Karte an und: tausche sie gegen eine deiner Karten, wirf sie ab oder (bei 7 bis Dame) wirf sie ab, um ihre Fähigkeit zu nutzen.</li>
+<li><b>Die oberste Karte vom Ablagestapel nehmen.</b> Du musst sie gegen eine deiner Karten tauschen.</li>
+<li><b>«Cabo» ansagen.</b> Du ziehst nicht. Alle anderen haben noch einen Zug, dann endet die Runde.</li>
+</ol>
+<p class="muted small">Die Karte, die deine Reihe verlässt, kommt offen auf den Ablagestapel.</p></div>
+<div class="card"><h2>Mehrere Karten tauschen</h2>
+<p>Wenn du glaubst, 2 oder mehr Karten mit dem <b>gleichen Wert</b> zu haben, darfst du sie alle gegen die genommene Karte tauschen. Decke sie auf:</p>
+<ul>
+<li>Sind sie gleich, kommen sie auf den Ablagestapel und du hast weniger Karten.</li>
+<li>Wenn nicht, behältst du alle <b>und zusätzlich</b> die genommene Karte.</li>
+</ul></div>
+<div class="card"><h2>Rundenende und Wertung</h2>
+<p>Die Runde endet, wenn jemand «Cabo» ansagt (und die anderen noch einen Zug hatten) oder wenn der Stapel leer ist. Alle decken auf und zählen ihre Karten zusammen.</p>
+<ul>
+<li><b>Wer Cabo angesagt hat:</b> bekommt mit der niedrigsten Summe (auch bei Gleichstand) <b>0</b> Punkte. Sonst die eigene Summe <b>+ 10</b> Strafpunkte.</li>
+<li><b>Alle anderen:</b> bekommen die Summe ihrer Karten.</li>
+<li><b>Kamikaze:</b> Wer am Ende genau zwei Damen und beide schwarzen Könige hat, bekommt 0 Punkte, alle anderen 50.</li>
+</ul></div>
+<div class="card"><h2>Spielende</h2>
+<ul>
+<li>Das Spiel endet, sobald jemand <b>mehr als 100 Punkte</b> hat (oder das gewählte Limit). Es gewinnt, wer die wenigsten Punkte hat.</li>
+<li><b>Genau 100:</b> Wer genau 100 Punkte erreicht, fällt auf 50. Nur einmal pro Spieler. Dieser Zähler macht das automatisch.</li>
+</ul></div>`,
   };
 
   /* ---------- state (saved on every change) ---------- */
 
   const fresh = () => ({
     v: 1,
-    lang: /^es/i.test(navigator.language || 'es') ? 'es' : 'en',
+    lang: 'es', // default; DE and EN are chosen with the buttons
     tab: 'score',
     started: false,
     n: 4, rounds: 0, points: 100,
@@ -252,6 +320,7 @@
     return fresh();
   }
   const s = load();
+  if (!TXT[s.lang]) s.lang = 'es';
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* storage off */ } };
 
   const t = (k, ...a) => { const v = TXT[s.lang][k]; return typeof v === 'function' ? v(...a) : v; };
@@ -326,7 +395,7 @@
     if (played) {
       const head = c.tot.map((_, i) => `<th>${esc(nameOf(i))}</th>`).join('');
       const body = c.rows.map((r, k) => `<tr><td>${k + 1}</td>${r.map((x) => `<td>${x.p}${x.halved ? ' <small>½</small>' : ''}</td>`).join('')}</tr>`).join('');
-      hist = `<div class="card"><h2>${t('history')}</h2><div class="scroll"><table>
+      hist = `<div class="card"><h2>${t('history')}</h2><div class="scroll"><table style="min-width:${4.2 + s.n * 3}em">
         <thead><tr><th>#</th>${head}</tr></thead><tbody>${body}</tbody>
         <tfoot><tr><td>${t('total')}</td>${c.tot.map((x) => `<td>${x}</td>`).join('')}</tr></tfoot></table></div></div>`;
     }
@@ -338,13 +407,14 @@
       </div>
       ${hist}
       <div class="row2"><button class="btn ghost" id="undo"${played ? '' : ' disabled style="opacity:.45"'}>${t('undo')}</button>
-      <button class="btn danger" id="new">${t('newGame')}</button></div>`;
+      <button class="btn danger" id="reset">${t('reset')}</button></div>
+      <button class="btn ghost" id="new" style="margin-top:10px">${t('newGame')}</button>`;
   }
 
   function render() {
     document.documentElement.lang = s.lang;
     document.title = t('title');
-    $('#lang').textContent = t('other');
+    for (const b of document.querySelectorAll('.langs button')) b.setAttribute('aria-pressed', String(b.dataset.lang === s.lang));
     for (const b of document.querySelectorAll('.tabs button')) {
       b.textContent = t(b.dataset.tab === 'score' ? 'tabScore' : 'tabRules');
       b.setAttribute('aria-selected', String(b.dataset.tab === s.tab));
@@ -365,8 +435,8 @@
     if (b.dataset.tab) {
       // Only the visible panel changes; the score and anything typed stay put.
       s.tab = b.dataset.tab; save(); render(); window.scrollTo(0, 0);
-    } else if (b.id === 'lang') {
-      s.lang = s.lang === 'es' ? 'en' : 'es'; save(); render();
+    } else if (b.dataset.lang) {
+      s.lang = b.dataset.lang; save(); render();
     } else if (b.dataset.step) {
       const [min, max, step] = LIMITS[b.dataset.step];
       s[b.dataset.step] = Math.min(max, Math.max(min, s[b.dataset.step] + step * Number(b.dataset.d)));
@@ -389,6 +459,9 @@
     } else if (b.id === 'undo') {
       const lastRound = s.history.pop();
       if (lastRound) { s.draft = Array.from({ length: MAXP }, (_, i) => (lastRound[i] != null ? String(lastRound[i]) : '')); save(); render(); }
+    } else if (b.id === 'reset') {
+      if (s.history.length && !confirm(t('confirmReset'))) return;
+      s.history = []; s.draft = Array(MAXP).fill(''); save(); render(); window.scrollTo(0, 0);
     } else if (b.id === 'new') {
       if (s.history.length && !confirm(t('confirmNew'))) return;
       s.started = false; s.history = []; s.draft = Array(MAXP).fill(''); save(); render(); window.scrollTo(0, 0);
