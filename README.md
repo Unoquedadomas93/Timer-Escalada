@@ -21,6 +21,10 @@ Free, no accounts, no ads, no tracking, and it works offline after the first vis
 - **Spanish and English** UI, detected from the browser and switchable in Settings.
 - **Installable PWA** with an offline service worker.
 
+## Cabo scorekeeper
+
+`cabo.html` is a separate, self-contained page (no dependencies) that keeps score for the card game Cabo: choose players, rounds and the points limit; it adds each round, halves a score that lands exactly on the limit (once per player), and has a rules tab. The score is saved on the device. Live at `/cabo.html`; it also works opened straight from a file.
+
 ## Run locally
 
 No build step and no dependencies.
