@@ -554,5 +554,14 @@
   }
 })();
 </script>
+<script type="module">
+  // Keep the iPad/phone screen on while this page is open (same code as the timer app).
+  import { keepAwake } from './js/keepawake.js';
+  keepAwake();
+  for (const ev of ['pointerdown', 'touchend', 'click']) {
+    document.addEventListener(ev, keepAwake, { passive: true, capture: true });
+  }
+  document.addEventListener('visibilitychange', keepAwake);
+</script>
 </body>
 </html>
