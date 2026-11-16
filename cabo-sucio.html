@@ -105,15 +105,16 @@
   tfoot td { font-weight: 800; border-bottom: 0; }
   .hv { color: #1d6fd1; font-weight: 800; }
 
-  .cards { display: none; }
-  .pcard { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 54px; height: 76px; border: 2px solid #1d1d1f; border-radius: 8px; background: #fff; color: #1d1d1f; font-style: normal; font-weight: 800; font-size: 1.5rem; line-height: 1; box-shadow: 0 2px 4px rgba(0,0,0,.18); }
-  .pcard b { font-size: 1.7rem; font-weight: 400; }
+  .cards { display: flex; gap: 6px; }
+  #rules th { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+  .pcard { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 40px; height: 56px; border: 2px solid #1d1d1f; border-radius: 7px; background: #fff; color: #1d1d1f; font-style: normal; font-weight: 800; font-size: 1.1rem; line-height: 1; box-shadow: 0 2px 4px rgba(0,0,0,.18); }
+  .pcard b { font-size: 1.25rem; font-weight: 400; }
   .pcard.red { color: var(--accent); }
   #rules h2 { margin-top: 4px; }
   #rules ul, #rules ol { margin: 6px 0 10px; padding-left: 1.25em; }
   #rules li { margin: 4px 0; }
   #rules table td { text-align: left; white-space: normal; }
-  #rules table th { text-align: left; white-space: nowrap; max-width: none; font-size: 1rem; color: var(--accent); }
+  #rules table th { text-align: left; white-space: normal; max-width: none; width: 104px; font-size: 1rem; color: var(--accent); }
 
   /* iPad / wide landscape screens: use the full width. Phones are unchanged. */
   @media (min-width: 900px) {
@@ -149,6 +150,9 @@
     #rules th { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
     #rules th .lab { font-weight: 800; }
     .cards { display: flex; gap: 8px; }
+    .pcard { width: 54px; height: 76px; font-size: 1.5rem; border-radius: 8px; }
+    .pcard b { font-size: 1.7rem; }
+    #rules table th { width: auto; }
   }
 </style>
 </head>
