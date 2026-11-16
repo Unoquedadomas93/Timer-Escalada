@@ -98,7 +98,7 @@
   th { font-size: .82rem; color: var(--muted); max-width: 6.5em; overflow: hidden; text-overflow: ellipsis; }
   th:first-child, td:first-child { text-align: left; color: var(--muted); }
   tfoot td { font-weight: 800; border-bottom: 0; }
-  td small { color: var(--warn); font-weight: 700; }
+  .hv { color: #1d6fd1; font-weight: 800; }
 
   #rules h2 { margin-top: 4px; }
   #rules ul, #rules ol { margin: 6px 0 10px; padding-left: 1.25em; }
@@ -141,11 +141,11 @@
       round: 'Ronda', of: 'de', limit: 'Límite', addRound: 'Sumar ronda', undo: 'Deshacer ronda',
       fill: 'Escribe los puntos de esta ronda.', history: 'Rondas', total: 'Total',
       lead: 'va ganando', sign: 'cambiar signo', halfTag: '½ usado', out: 'pasó el límite',
-      halved: (n, a, b) => `${n} llegó a ${a} exactos: baja a ${b}.`,
+      halved: (n, a, b) => `${n} llegó a ${a}, la mitad del límite: baja a ${b}.`,
       over: 'Fin de la partida', winner: 'Gana', winners: 'Empate', withPts: (p) => `con ${p} puntos`,
       confirmNew: '¿Empezar una partida nueva? Se borrará el marcador actual.',
       reset: 'Reiniciar', confirmReset: '¿Poner el marcador en 0? Se mantienen los jugadores y los ajustes.',
-      halfInfo: (a, b) => `Si alguien queda exactamente en ${a}, baja a ${b} (una vez por jugador).`,
+      halfInfo: (a, b) => `Al llegar exactamente a ${a} (la mitad del límite), la puntuación baja a ${b} (una vez por jugador).`,
     },
     en: {
       title: 'Cabo · Score', tabScore: 'Score', tabRules: 'Rules',
@@ -155,11 +155,11 @@
       round: 'Round', of: 'of', limit: 'Limit', addRound: 'Add round', undo: 'Undo round',
       fill: "Enter this round's points.", history: 'Rounds', total: 'Total',
       lead: 'leading', sign: 'change sign', halfTag: '½ used', out: 'over the limit',
-      halved: (n, a, b) => `${n} hit exactly ${a}: drops to ${b}.`,
+      halved: (n, a, b) => `${n} reached ${a}, half the limit: drops to ${b}.`,
       over: 'Game over', winner: 'Winner', winners: 'Tie', withPts: (p) => `with ${p} points`,
       confirmNew: 'Start a new game? The current score will be erased.',
       reset: 'Reset', confirmReset: 'Reset the score to 0? Players and settings are kept.',
-      halfInfo: (a, b) => `If someone lands exactly on ${a}, they drop to ${b} (once per player).`,
+      halfInfo: (a, b) => `Reaching exactly ${a} (half the limit) drops the score to ${b} (once per player).`,
     },
     de: {
       title: 'Cabo · Punkte', tabScore: 'Punkte', tabRules: 'Regeln',
@@ -169,11 +169,11 @@
       round: 'Runde', of: 'von', limit: 'Limit', addRound: 'Runde addieren', undo: 'Runde zurück',
       fill: 'Trage die Punkte dieser Runde ein.', history: 'Runden', total: 'Summe',
       lead: 'führt', sign: 'Vorzeichen wechseln', halfTag: '½ genutzt', out: 'über dem Limit',
-      halved: (n, a, b) => `${n} hat genau ${a}: fällt auf ${b}.`,
+      halved: (n, a, b) => `${n} hat ${a} erreicht, die Hälfte des Limits: fällt auf ${b}.`,
       over: 'Spielende', winner: 'Sieger', winners: 'Gleichstand', withPts: (p) => `mit ${p} Punkten`,
       confirmNew: 'Neues Spiel starten? Der aktuelle Punktestand wird gelöscht.',
       reset: 'Zurücksetzen', confirmReset: 'Punktestand auf 0 setzen? Spieler und Einstellungen bleiben.',
-      halfInfo: (a, b) => `Wer genau ${a} erreicht, fällt auf ${b} (einmal pro Spieler).`,
+      halfInfo: (a, b) => `Wer genau ${a} (die Hälfte des Limits) erreicht, fällt auf ${b} (einmal pro Spieler).`,
     },
   };
 
@@ -219,7 +219,7 @@
 <div class="card"><h2>Fin de la partida</h2>
 <ul>
 <li>La partida termina cuando alguien <b>supera 100 puntos</b> (o el límite que elijas). Gana quien tenga menos.</li>
-<li><b>100 exactos:</b> si quedas exactamente en 100, tu puntaje baja a 50. Solo una vez por jugador. Este marcador lo hace solo.</li>
+<li><b>Mitad del límite:</b> si quedas exactamente en la mitad del límite (100 → 50), tu puntaje baja a la mitad (25). Si el límite es impar, la mitad se redondea hacia arriba. Solo una vez por jugador. Este marcador lo hace solo.</li>
 </ul></div>`,
     en: `
 <div class="card"><h2>Powers</h2>
@@ -262,7 +262,7 @@
 <div class="card"><h2>End of game</h2>
 <ul>
 <li>The game ends when someone <b>goes over 100 points</b> (or the limit you choose). The lowest score wins.</li>
-<li><b>Exactly 100:</b> if you land exactly on 100, your score drops to 50. Only once per player. This scorekeeper does it for you.</li>
+<li><b>Half the limit:</b> if you land exactly on half the limit (100 → 50), your score is halved (25). For an odd limit, half is rounded up. Only once per player. This scorekeeper does it for you.</li>
 </ul></div>`,
     de: `
 <div class="card"><h2>Fähigkeiten</h2>
@@ -305,7 +305,7 @@
 <div class="card"><h2>Spielende</h2>
 <ul>
 <li>Das Spiel endet, sobald jemand <b>mehr als 100 Punkte</b> hat (oder das gewählte Limit). Es gewinnt, wer die wenigsten Punkte hat.</li>
-<li><b>Genau 100:</b> Wer genau 100 Punkte erreicht, fällt auf 50. Nur einmal pro Spieler. Dieser Zähler macht das automatisch.</li>
+<li><b>Halbes Limit:</b> Wer genau die Hälfte des Limits erreicht (100 → 50), wird halbiert (25). Bei ungeradem Limit wird die Hälfte aufgerundet. Nur einmal pro Spieler. Dieser Zähler macht das automatisch.</li>
 </ul></div>`,
   };
 
@@ -346,15 +346,16 @@
   function calc() {
     const tot = Array(s.n).fill(0);
     const used = Array(s.n).fill(false);
-    const half = Math.floor(s.points / 2);
+    const trig = Math.ceil(s.points / 2);
+    const half = Math.ceil(trig / 2);
     const rows = s.history.map((r) => r.slice(0, s.n).map((p, i) => {
       tot[i] += p;
       let halved = false;
-      if (tot[i] === s.points && !used[i]) { tot[i] = half; used[i] = halved = true; }
+      if (tot[i] === trig && !used[i]) { tot[i] = half; used[i] = halved = true; }
       return { p, halved };
     }));
     const over = (s.rounds > 0 && s.history.length >= s.rounds) || tot.some((x) => x > s.points);
-    return { tot, used, rows, over, half, min: Math.min(...tot) };
+    return { tot, used, rows, over, trig, half, min: Math.min(...tot) };
   }
 
   /* ---------- views ---------- */
@@ -373,7 +374,7 @@
       ${stepper('n', t('players'), '', s.n)}
       ${stepper('rounds', t('rounds'), t('roundsSub'), s.rounds || t('noLimit'))}
       ${stepper('points', t('points'), t('pointsSub'), s.points)}
-      <p class="muted small" style="margin:8px 0 0">${t('halfInfo', s.points, Math.floor(s.points / 2))}</p></div>
+      <p class="muted small" style="margin:8px 0 0">${t('halfInfo', Math.ceil(s.points / 2), Math.ceil(Math.ceil(s.points / 2) / 2))}</p></div>
       <div class="card"><h2>${t('names')}</h2><div class="names">${names}</div></div>
       <button class="btn" id="start">${t('start')}</button>`;
   }
@@ -383,7 +384,7 @@
     const played = s.history.length;
     const roundNo = c.over ? played : played + 1;
     const last = c.rows[played - 1] || [];
-    const notes = last.map((x, i) => (x.halved ? `<div class="note">${esc(t('halved', nameOf(i), s.points, c.half))}</div>` : '')).join('');
+    const notes = last.map((x, i) => (x.halved ? `<div class="note">${esc(t('halved', nameOf(i), c.trig, c.half))}</div>` : '')).join('');
 
     let win = '';
     if (c.over) {
@@ -403,7 +404,7 @@
     let hist = '';
     if (played) {
       const head = c.tot.map((_, i) => `<th>${esc(nameOf(i))}</th>`).join('');
-      const body = c.rows.map((r, k) => `<tr><td>${k + 1}</td>${r.map((x) => `<td>${x.p}${x.halved ? ' <small>½</small>' : ''}</td>`).join('')}</tr>`).join('');
+      const body = c.rows.map((r, k) => `<tr><td>${k + 1}</td>${r.map((x) => `<td>${x.halved ? `<span class="hv">${x.p} ½</span>` : x.p}</td>`).join('')}</tr>`).join('');
       hist = `<div class="card"><h2>${t('history')}</h2><div class="scroll"><table style="min-width:${4.2 + s.n * 3}em">
         <thead><tr><th>#</th>${head}</tr></thead><tbody>${body}</tbody>
         <tfoot><tr><td>${t('total')}</td>${c.tot.map((x) => `<td>${x}</td>`).join('')}</tr></tfoot></table></div></div>`;
